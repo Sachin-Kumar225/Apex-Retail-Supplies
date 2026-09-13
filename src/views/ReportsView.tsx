@@ -5,7 +5,6 @@ import {
   Download,
   TrendingUp,
   TrendingDown,
-  DollarSign,
   Package,
   Users,
   Award,

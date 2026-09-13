@@ -155,6 +155,7 @@ export interface UserProfile {
   email: string;
   role: string;
   businessId: string;
+  avatar?: string;
 }
 
 export interface DashboardMetrics {
@@ -178,6 +179,40 @@ export interface SmartInsight {
   actionText?: string;
 }
 
+export type CommandCenterPillarType = 'sales' | 'expenses' | 'profit' | 'inventory' | 'khata';
+
+export interface CommandPillarAnalysis {
+  pillar: CommandCenterPillarType;
+  title: string;
+  status: 'healthy' | 'warning' | 'critical' | 'opportunity';
+  metric: string;
+  subtext: string;
+  insight: string;
+}
+
+export interface AiActionItem {
+  id: string;
+  type: 'insight' | 'warning' | 'recommendation';
+  category: CommandCenterPillarType;
+  title: string;
+  description: string;
+  impactBadge: string;
+  actionLabel?: string;
+  actionTarget?: 'sales' | 'expenses' | 'products' | 'payments' | 'customers' | 'assistant' | 'reports';
+}
+
+export interface AiCommandCenterReport {
+  summary: string;
+  healthScore: number;
+  healthLabel: string;
+  pillars: CommandPillarAnalysis[];
+  insights: AiActionItem[];
+  warnings: AiActionItem[];
+  recommendations: AiActionItem[];
+  source?: string;
+  timestamp?: string;
+}
+
 export interface ChatMessage {
   id: string;
   sender?: 'user' | 'assistant';
@@ -187,4 +222,39 @@ export interface ChatMessage {
   timestamp: string;
   source?: string;
   isThinking?: boolean;
+}
+
+export interface BusinessProfile {
+  businessName: string;
+  ownerName: string;
+  businessType: string;
+  productsServices: string;
+  approxDailySales: number;
+  approxDailyExpenses: number;
+  approxDailyCustomers: number;
+  paymentMethods: string[];
+  businessGoals: string[];
+  currency: string;
+  hasCompletedSetup: boolean;
+  setupDate?: string;
+}
+
+export interface DailyBusinessUpdatePayload {
+  date: string;
+  totalSales: number;
+  moneyReceived: number;
+  expenses: number;
+  expenseCategory?: string;
+  expenseNotes?: string;
+  supplierPayments: number;
+  supplierName?: string;
+  customerPayments: number;
+  customerId?: string;
+  notes?: string;
+  optionalProducts?: {
+    productId: string;
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
 }

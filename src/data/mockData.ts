@@ -9,7 +9,27 @@ import {
   BusinessSettings,
   StockMovement,
   UserProfile,
+  BusinessProfile,
 } from '../types';
+
+export const initialBusinessProfile: BusinessProfile = {
+  businessName: 'Apex Retail & Supplies',
+  ownerName: 'Rajesh Sharma',
+  businessType: 'Retail Store',
+  productsServices: 'Mobile accessories, computer electronics, chargers, and boutique peripherals',
+  approxDailySales: 1200,
+  approxDailyExpenses: 280,
+  approxDailyCustomers: 25,
+  paymentMethods: ['Cash', 'UPI', 'Card', 'Bank Transfer', 'Credit'],
+  businessGoals: [
+    'Maximize Net Profit Margins',
+    'Recover Pending Customer Khata',
+    'Prevent Low Stock & Stockouts',
+  ],
+  currency: '₹',
+  hasCompletedSetup: true,
+  setupDate: '2026-08-01',
+};
 
 export const initialBusinessSettings: BusinessSettings = {
   businessName: 'Apex Retail & Supplies',
@@ -19,7 +39,7 @@ export const initialBusinessSettings: BusinessSettings = {
   email: 'contact@apexretail.com',
   address: '452 Commerce Boulevard, Suite 100, Austin, TX 78701',
   gstin: 'GSTIN27AAACA9999Z1Z8',
-  currency: '$',
+  currency: '₹',
   invoicePrefix: 'INV-2026-',
   defaultTaxRate: 8.5,
   enableNegativeStock: false,
@@ -626,7 +646,7 @@ export const initialInvoices: Invoice[] = [
     paidAmount: 405.25,
     balanceDue: 300,
     status: 'Partial',
-    notes: 'Balance $300.00 payable via wire transfer or UPI before due date.',
+    notes: 'Balance ₹300.00 payable via wire transfer or UPI before due date.',
   },
   {
     id: 'INV-003',
@@ -690,7 +710,7 @@ export const initialNotifications: AppNotification[] = [
   {
     id: 'NOTIF-003',
     title: 'Pending Khata Collection',
-    message: 'Priya Patel has an outstanding Khata balance of $1,300.00.',
+    message: 'Priya Patel has an outstanding Khata balance of ₹1,300.00.',
     type: 'payment',
     read: false,
     timestamp: '2026-09-11T16:45:00Z',
@@ -699,7 +719,7 @@ export const initialNotifications: AppNotification[] = [
   {
     id: 'NOTIF-004',
     title: 'New High-Value Sale Recorded',
-    message: 'Invoice INV-2026-002 ($705.25) saved for customer Priya Patel.',
+    message: 'Invoice INV-2026-002 (₹705.25) saved for customer Priya Patel.',
     type: 'sale',
     read: true,
     timestamp: '2026-09-11T12:00:00Z',
@@ -708,7 +728,7 @@ export const initialNotifications: AppNotification[] = [
   {
     id: 'NOTIF-005',
     title: 'Monthly Rent Logged',
-    message: 'Expense of $1,450.00 for Showroom Rent was recorded.',
+    message: 'Expense of ₹1,450.00 for Showroom Rent was recorded.',
     type: 'expense',
     read: true,
     timestamp: '2026-09-01T09:00:00Z',

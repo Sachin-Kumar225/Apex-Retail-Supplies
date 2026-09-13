@@ -13,6 +13,8 @@ import {
   DashboardMetrics,
   PaymentMethod,
   ChatMessage,
+  BusinessProfile,
+  DailyBusinessUpdatePayload,
 } from '../types';
 import {
   initialBusinessSettings,
@@ -25,11 +27,15 @@ import {
   initialNotifications,
   initialStockMovements,
   initialUser,
+  initialBusinessProfile,
 } from '../data/mockData';
+import { supabase, isSupabaseConfigured, authSignOut } from '../lib/supabase';
 
 interface BusinessContextType {
   user: UserProfile | null;
+  isAuthLoading: boolean;
   settings: BusinessSettings;
+  businessProfile: BusinessProfile;
   customers: Customer[];
   products: Product[];
   stockMovements: StockMovement[];
@@ -44,6 +50,13 @@ interface BusinessContextType {
   // Actions
   login: (email: string, name?: string) => void;
   logout: () => void;
+  signUp: (name: string, email: string, businessName?: string) => void;
+  saveBusinessProfile: (profile: BusinessProfile) => void;
+  recordDailyBusinessUpdate: (payload: DailyBusinessUpdatePayload) => {
+    sale?: Sale;
+    expensesCreated?: Expense[];
+    payment?: PaymentRecord;
+  };
   updateSettings: (newSettings: Partial<BusinessSettings>) => void;
   resetToDemoData: () => void;
   exportDataBackup: () => string;
@@ -109,15 +122,48 @@ const STORAGE_KEY = 'vyapar_business_mgr_data_v1';
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load state from localStorage or initialize with mock data
+  // Authentication state (null if unauthenticated)
   const [user, setUser] = useState<UserProfile | null>(() => {
     const saved = localStorage.getItem(`${STORAGE_KEY}_user`);
-    return saved ? JSON.parse(saved) : initialUser;
+    if (!saved) return null;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return null;
+    }
   });
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
 
   const [settings, setSettings] = useState<BusinessSettings>(() => {
     const saved = localStorage.getItem(`${STORAGE_KEY}_settings`);
-    return saved ? JSON.parse(saved) : initialBusinessSettings;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.currency === '$' || !parsed.currency) {
+          parsed.currency = '₹';
+        }
+        return parsed;
+      } catch (e) {
+        return initialBusinessSettings;
+      }
+    }
+    return initialBusinessSettings;
+  });
+
+  const [businessProfile, setBusinessProfile] = useState<BusinessProfile>(() => {
+    const saved = localStorage.getItem(`${STORAGE_KEY}_business_profile`);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.currency === '$' || !parsed.currency) {
+          parsed.currency = '₹';
+        }
+        return parsed;
+      } catch (e) {
+        return initialBusinessProfile;
+      }
+    }
+    return initialBusinessProfile;
   });
 
   const [customers, setCustomers] = useState<Customer[]>(() => {
@@ -170,14 +216,90 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  // Sync to localStorage
+  // Sync user state to localStorage
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_user`, JSON.stringify(user));
+    if (user) {
+      localStorage.setItem(`${STORAGE_KEY}_user`, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(`${STORAGE_KEY}_user`);
+    }
   }, [user]);
+
+  // Supabase Authentication session listener and initialization
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initializeAuth() {
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { data } = await supabase.auth.getSession();
+          if (data?.session?.user && isMounted) {
+            const sbUser = data.session.user;
+            const profile: UserProfile = {
+              id: sbUser.id,
+              name: sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'Business Owner',
+              email: sbUser.email || '',
+              role: (sbUser.user_metadata?.role as any) || 'Owner & Administrator',
+              businessId: `biz_${sbUser.id.slice(0, 8)}`,
+            };
+            setUser(profile);
+            localStorage.setItem(`${STORAGE_KEY}_user`, JSON.stringify(profile));
+          }
+        } catch (err) {
+          console.warn('Supabase session load error:', err);
+        }
+      }
+      if (isMounted) {
+        setIsAuthLoading(false);
+      }
+    }
+
+    initializeAuth();
+
+    if (isSupabaseConfigured && supabase) {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const sbUser = session.user;
+          const profile: UserProfile = {
+            id: sbUser.id,
+            name: sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'Business Owner',
+            email: sbUser.email || '',
+            role: (sbUser.user_metadata?.role as any) || 'Owner & Administrator',
+            businessId: `biz_${sbUser.id.slice(0, 8)}`,
+          };
+          setUser(profile);
+          localStorage.setItem(`${STORAGE_KEY}_user`, JSON.stringify(profile));
+          if (sbUser.user_metadata?.businessName) {
+            setSettings((prev) => ({
+              ...prev,
+              businessName: sbUser.user_metadata.businessName,
+              ownerName: sbUser.user_metadata.name || prev.ownerName,
+            }));
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          localStorage.removeItem(`${STORAGE_KEY}_user`);
+        }
+      });
+
+      return () => {
+        isMounted = false;
+        subscription.unsubscribe();
+      };
+    } else {
+      setIsAuthLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(`${STORAGE_KEY}_settings`, JSON.stringify(settings));
   }, [settings]);
+
+  useEffect(() => {
+    localStorage.setItem(`${STORAGE_KEY}_business_profile`, JSON.stringify(businessProfile));
+  }, [businessProfile]);
 
   useEffect(() => {
     localStorage.setItem(`${STORAGE_KEY}_customers`, JSON.stringify(customers));
@@ -264,19 +386,252 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return notifications.filter((n) => !n.read).length;
   }, [notifications]);
 
-  // Auth simulation
+  // Auth methods
   const login = (email: string, name?: string) => {
-    setUser({
-      id: `usr_${Date.now()}`,
-      name: name || email.split('@')[0],
-      email,
+    const isDemo = email.toLowerCase().includes('rajesh') || email.toLowerCase().includes('demo');
+    const profile: UserProfile = {
+      id: isDemo ? initialUser.id : `usr_${Date.now()}`,
+      name: name || (isDemo ? initialUser.name : email.split('@')[0]),
+      email: email.trim(),
       role: 'Owner & Administrator',
-      businessId: 'biz_01',
-    });
+      businessId: isDemo ? initialUser.businessId : `biz_${Date.now()}`,
+      avatar: isDemo ? initialUser.avatar : undefined,
+    };
+    setUser(profile);
+    localStorage.setItem(`${STORAGE_KEY}_user`, JSON.stringify(profile));
   };
 
   const logout = () => {
+    authSignOut();
     setUser(null);
+    localStorage.removeItem(`${STORAGE_KEY}_user`);
+  };
+
+  const signUp = (name: string, email: string, businessName?: string) => {
+    const newUser: UserProfile = {
+      id: `usr_${Date.now()}`,
+      name: name.trim(),
+      email: email.trim(),
+      role: 'Owner & Administrator',
+      businessId: `biz_${Date.now()}`,
+    };
+    setUser(newUser);
+    localStorage.setItem(`${STORAGE_KEY}_user`, JSON.stringify(newUser));
+    const storeName = businessName?.trim() || `${name.trim()}'s Store`;
+    setBusinessProfile((prev) => ({
+      ...prev,
+      ownerName: name.trim(),
+      businessName: storeName,
+      hasCompletedSetup: false,
+    }));
+    setSettings((prev) => ({
+      ...prev,
+      businessName: storeName,
+      ownerName: name.trim(),
+    }));
+  };
+
+  const saveBusinessProfile = (profile: BusinessProfile) => {
+    setBusinessProfile(profile);
+    setSettings((prev) => ({
+      ...prev,
+      businessName: profile.businessName || prev.businessName,
+      ownerName: profile.ownerName || prev.ownerName,
+      currency: profile.currency || prev.currency,
+    }));
+    setNotifications((prev) => [
+      {
+        id: `notif_${Date.now()}`,
+        title: 'Business Profile Configured',
+        message: `${profile.businessName} profile saved. Daily targets and AI insights are now personalized.`,
+        type: 'system',
+        read: false,
+        timestamp: new Date().toISOString(),
+        linkSection: 'dashboard',
+      },
+      ...prev,
+    ]);
+  };
+
+  const recordDailyBusinessUpdate = (payload: DailyBusinessUpdatePayload) => {
+    const dateStr = payload.date || new Date().toISOString().split('T')[0];
+    let createdSale: Sale | undefined = undefined;
+    const createdExpenses: Expense[] = [];
+    let createdPayment: PaymentRecord | undefined = undefined;
+
+    // 1. Record Sale if totalSales > 0
+    if (payload.totalSales > 0) {
+      let targetCust = customers.find(
+        (c) => c.name.toLowerCase().includes('walk-in') || c.id === payload.customerId
+      );
+      if (!targetCust && customers.length > 0) {
+        targetCust = customers[0];
+      }
+
+      const invoiceNum = `${settings.invoicePrefix}${String(sales.length + 1).padStart(3, '0')}`;
+      const paid = Math.min(payload.totalSales, payload.moneyReceived);
+      const pending = Math.max(0, payload.totalSales - paid);
+
+      // Product-wise entry is optional
+      let saleItems = [];
+      if (payload.optionalProducts && payload.optionalProducts.length > 0) {
+        saleItems = payload.optionalProducts.map((p) => ({
+          productId: p.productId,
+          productName: p.productName || 'Item',
+          sku: 'SKU',
+          quantity: p.quantity,
+          unitPrice: p.unitPrice,
+          subtotal: Number((p.quantity * p.unitPrice).toFixed(2)),
+        }));
+
+        // Deduct stock for chosen optional products
+        setProducts((prev) =>
+          prev.map((prod) => {
+            const match = payload.optionalProducts?.find((op) => op.productId === prod.id);
+            if (match) {
+              return {
+                ...prod,
+                stockQuantity: Math.max(0, prod.stockQuantity - match.quantity),
+                totalSold: (prod.totalSold || 0) + match.quantity,
+              };
+            }
+            return prod;
+          })
+        );
+      } else {
+        saleItems = [
+          {
+            productId: 'prod_daily_summary',
+            productName: 'Daily Consolidated Sales',
+            sku: 'DAILY-AGG',
+            quantity: 1,
+            unitPrice: payload.totalSales,
+            subtotal: payload.totalSales,
+          },
+        ];
+      }
+
+      createdSale = {
+        id: `SALE-${Date.now()}`,
+        invoiceNumber: invoiceNum,
+        customerId: targetCust?.id || 'CUST-GENERAL',
+        customerName: targetCust?.name || 'Walk-in Customers (Daily)',
+        customerPhone: targetCust?.phone || '+1 555-0000',
+        items: saleItems,
+        subtotal: payload.totalSales,
+        discount: 0,
+        taxRate: 0,
+        taxAmount: 0,
+        grandTotal: payload.totalSales,
+        paidAmount: paid,
+        pendingAmount: pending,
+        paymentMethod: 'Cash',
+        saleDate: dateStr,
+        notes:
+          payload.notes ||
+          `Daily Business Update for ${dateStr}. Money received: ${settings.currency}${paid}`,
+      };
+
+      setSales((prev) => [createdSale!, ...prev]);
+
+      if (pending > 0 && targetCust) {
+        setCustomers((prev) =>
+          prev.map((c) =>
+            c.id === targetCust?.id
+              ? {
+                  ...c,
+                  totalPurchases: Number((c.totalPurchases + payload.totalSales).toFixed(2)),
+                  totalPaid: Number((c.totalPaid + paid).toFixed(2)),
+                  totalPending: Number((c.totalPending + pending).toFixed(2)),
+                }
+              : c
+          )
+        );
+      }
+    }
+
+    // 2. Record Expenses if expenses > 0
+    if (payload.expenses > 0) {
+      const expId = `EXP-${Date.now()}`;
+      const newExp: Expense = {
+        id: expId,
+        category: (payload.expenseCategory as any) || 'Daily Supplies',
+        description: payload.expenseNotes || `Daily operating expenses (${dateStr})`,
+        amount: payload.expenses,
+        date: dateStr,
+        paymentMethod: 'Cash',
+      };
+      createdExpenses.push(newExp);
+      setExpenses((prev) => [newExp, ...prev]);
+    }
+
+    // 3. Record Supplier Payments if supplierPayments > 0
+    if (payload.supplierPayments > 0) {
+      const supExpId = `EXP-SUP-${Date.now()}`;
+      const supExp: Expense = {
+        id: supExpId,
+        category: 'Transport',
+        description: `Supplier payment${payload.supplierName ? `: ${payload.supplierName}` : ''} (${dateStr})`,
+        amount: payload.supplierPayments,
+        date: dateStr,
+        paymentMethod: 'Bank Transfer',
+      };
+      createdExpenses.push(supExp);
+      setExpenses((prev) => [supExp, ...prev]);
+    }
+
+    // 4. Record Customer Payments / Khata received if customerPayments > 0
+    if (payload.customerPayments > 0) {
+      const payCust = payload.customerId
+        ? customers.find((c) => c.id === payload.customerId)
+        : customers.find((c) => c.totalPending > 0) || customers[0];
+
+      if (payCust) {
+        createdPayment = {
+          id: `PAY-${Date.now()}`,
+          customerId: payCust.id,
+          customerName: payCust.name,
+          amount: payload.customerPayments,
+          paymentDate: dateStr,
+          paymentMethod: 'Cash',
+          notes: `Daily customer khata payment collection`,
+          receiptNumber: `REC-${Date.now().toString().slice(-4)}`,
+        };
+        setPayments((prev) => [createdPayment!, ...prev]);
+
+        setCustomers((prev) =>
+          prev.map((c) =>
+            c.id === payCust.id
+              ? {
+                  ...c,
+                  totalPaid: Number((c.totalPaid + payload.customerPayments).toFixed(2)),
+                  totalPending: Number(Math.max(0, c.totalPending - payload.customerPayments).toFixed(2)),
+                }
+              : c
+          )
+        );
+      }
+    }
+
+    // Add summary notification
+    setNotifications((prev) => [
+      {
+        id: `notif_${Date.now()}`,
+        title: 'Daily Business Update Recorded',
+        message: `Logged for ${dateStr}: Sales ${settings.currency}${payload.totalSales}, Cash in ${settings.currency}${payload.moneyReceived}, Expenses ${settings.currency}${payload.expenses}`,
+        type: 'sale',
+        read: false,
+        timestamp: new Date().toISOString(),
+        linkSection: 'dashboard',
+      },
+      ...prev,
+    ]);
+
+    return {
+      sale: createdSale,
+      expensesCreated: createdExpenses,
+      payment: createdPayment,
+    };
   };
 
   const updateSettings = (newSettings: Partial<BusinessSettings>) => {
@@ -286,6 +641,7 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const resetToDemoData = () => {
     setUser(initialUser);
     setSettings(initialBusinessSettings);
+    setBusinessProfile(initialBusinessProfile);
     setCustomers(initialCustomers);
     setProducts(initialProducts);
     setStockMovements(initialStockMovements);
@@ -872,7 +1228,9 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     <BusinessContext.Provider
       value={{
         user,
+        isAuthLoading,
         settings,
+        businessProfile,
         customers,
         products,
         stockMovements,
@@ -885,6 +1243,9 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         metrics,
         login,
         logout,
+        signUp,
+        saveBusinessProfile,
+        recordDailyBusinessUpdate,
         updateSettings,
         resetToDemoData,
         exportDataBackup,

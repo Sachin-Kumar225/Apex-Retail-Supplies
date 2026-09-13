@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
   TrendingDown,
-  DollarSign,
+  IndianRupee,
   Users,
   AlertTriangle,
   Package,
@@ -16,6 +16,10 @@ import {
   Receipt,
   FileText,
   PackagePlus,
+  Zap,
+  Target,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
 import { formatCurrency, formatDate } from '../utils/formatters';
@@ -24,7 +28,10 @@ import {
   TopProductsChart,
   ExpenseCategoryChart,
 } from '../components/charts/BusinessCharts';
-import { SmartInsight, Customer, Invoice } from '../types';
+import { AiCommandCenter } from '../components/dashboard/AiCommandCenter';
+import { DailyBusinessUpdateModal } from '../components/modals/DailyBusinessUpdateModal';
+import { BusinessSetupModal } from '../components/modals/BusinessSetupModal';
+import { Customer, Invoice } from '../types';
 
 interface DashboardViewProps {
   onNavigate: (section: string) => void;
@@ -45,9 +52,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenInvoicePreview,
   onCollectPayment,
 }) => {
-  const { metrics, settings, sales, expenses, products, customers, invoices } = useBusiness();
-  const [insights, setInsights] = useState<SmartInsight[]>([]);
-  const [loadingInsights, setLoadingInsights] = useState(false);
+  const { metrics, settings, sales, expenses, products, customers, invoices, businessProfile } =
+    useBusiness();
+
+  const [isDailyUpdateOpen, setIsDailyUpdateOpen] = useState(false);
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
   // Compute 7-day trend data from real sales & expenses
   const trendData = React.useMemo(() => {
@@ -103,77 +112,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }));
   }, [expenses]);
 
-  // Fetch or generate smart insights
-  useEffect(() => {
-    let isMounted = true;
-    const fetchInsights = async () => {
-      setLoadingInsights(true);
-      try {
-        const payload = {
-          currency: settings.currency,
-          metrics,
-          products: products.map((p) => ({
-            name: p.name,
-            stockQuantity: p.stockQuantity,
-            minStockLevel: p.minStockLevel,
-          })),
-          customers: customers.map((c) => ({
-            name: c.name,
-            totalPending: c.totalPending,
-          })),
-        };
-
-        const res = await fetch('/api/ai/insights', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ context: payload }),
-        });
-        const data = await res.json();
-        if (isMounted && data.insights && Array.isArray(data.insights)) {
-          setInsights(data.insights);
-        }
-      } catch (err) {
-        // Fallback local insights
-        if (isMounted) {
-          setInsights([
-            {
-              id: '1',
-              type: 'positive',
-              title: 'Net Monthly Profit',
-              description: `Generated ${formatCurrency(metrics.monthlyProfit, settings.currency)} in net profit this month.`,
-              actionText: 'View Reports',
-            },
-            {
-              id: '2',
-              type: metrics.lowStockProducts > 0 ? 'warning' : 'positive',
-              title: metrics.lowStockProducts > 0 ? `${metrics.lowStockProducts} Items Need Restocking` : 'Inventory Well Stocked',
-              description: metrics.lowStockProducts > 0
-                ? 'Replenish safety stock to protect against sales loss.'
-                : 'Stock turnover is optimal with safe buffer counts.',
-              actionText: 'Manage Inventory',
-            },
-            {
-              id: '3',
-              type: metrics.pendingPayments > 0 ? 'alert' : 'positive',
-              title: metrics.pendingPayments > 0 ? `Uncollected Khata Balance` : 'Zero Pending Debts',
-              description: metrics.pendingPayments > 0
-                ? `${formatCurrency(metrics.pendingPayments, settings.currency)} is owed by customers.`
-                : 'All customer accounts are completely settled!',
-              actionText: 'Open Khata',
-            },
-          ]);
-        }
-      } finally {
-        if (isMounted) setLoadingInsights(false);
-      }
-    };
-
-    fetchInsights();
-    return () => {
-      isMounted = false;
-    };
-  }, [metrics, products.length, customers.length, settings.currency]);
-
   // Recent transactions
   const recentSales = sales.slice(0, 5);
   // Pending payments list
@@ -202,103 +140,150 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Quick Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5">
           <button
+            onClick={() => setIsDailyUpdateOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-linear-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 rounded-xl shadow-lg shadow-emerald-950/40 border border-emerald-400/40 transition-all duration-200 hover:-translate-y-0.5"
+            title="Fast 30-second daily totals entry for sales, collections, expenses, supplier & customer payments"
+          >
+            <Zap className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
+            Daily Business Update
+          </button>
+
+          <button
             onClick={onOpenAddSale}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs theme-btn-primary rounded-xl"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs theme-btn-primary rounded-xl"
           >
             <ShoppingCart className="w-3.5 h-3.5" />
             Add Sale
           </button>
           <button
             onClick={onOpenAddCustomer}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold theme-btn-secondary rounded-xl"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold theme-btn-secondary rounded-xl"
           >
             <Users className="w-3.5 h-3.5 text-cyan-400" />
             Add Customer
           </button>
           <button
             onClick={onOpenAddProduct}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold theme-btn-secondary rounded-xl"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold theme-btn-secondary rounded-xl"
           >
             <PackagePlus className="w-3.5 h-3.5 text-cyan-400" />
             Add Product
           </button>
           <button
             onClick={onOpenAddExpense}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-rose-300 bg-rose-950/40 hover:bg-rose-950/70 border border-rose-500/30 hover:border-rose-400/50 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-rose-950/40"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-300 bg-rose-950/40 hover:bg-rose-950/70 border border-rose-500/30 hover:border-rose-400/50 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-rose-950/40"
           >
             <Receipt className="w-3.5 h-3.5 text-rose-400" />
             Add Expense
           </button>
+
           <button
-            onClick={() => onNavigate('invoices')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold theme-btn-secondary rounded-xl"
+            onClick={() => setIsSetupModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-cyan-300 bg-cyan-950/40 hover:bg-cyan-950/70 border border-cyan-500/30 hover:border-cyan-400/50 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+            title="Review or edit your Business Setup Questionnaire & AI profile targets"
           >
-            <FileText className="w-3.5 h-3.5 text-cyan-400" />
-            Invoices
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            Business Profile Setup
           </button>
         </div>
       </div>
 
-      {/* AI Smart Business Insights Panel */}
-      <div className="bg-gradient-to-r from-[#0d1e3d] via-[#0b1b36] to-[#071328] rounded-2xl p-5 sm:p-6 text-white border border-cyan-500/30 shadow-xl shadow-cyan-950/20">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.25)]">
-              <Sparkles className="w-4 h-4" />
+      {/* Personalized Business Targets & Goals Benchmark Strip */}
+      <div className="rounded-2xl bg-linear-to-r from-[#071124] via-[#09152b] to-[#0c1e3d] border border-cyan-500/30 p-4 sm:p-5 shadow-lg shadow-cyan-950/20">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {/* Left: Business Info & Goals */}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Target className="w-4 h-4 text-cyan-400" />
+                Personalized Business Benchmarks:
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-cyan-950/90 text-cyan-300 border border-cyan-500/30">
+                {businessProfile.businessType || 'Retail Store'}
+              </span>
+              <span className="text-xs text-slate-400">
+                {businessProfile.businessName}
+              </span>
             </div>
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                AI Business Insights
-                <span className="text-[10px] uppercase tracking-wider font-extrabold bg-cyan-950/80 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-400/30 shadow-[0_0_8px_rgba(34,211,238,0.2)]">
-                  Live Diagnostic
+
+            {/* Business Goals Chips */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(businessProfile.businessGoals || []).map((goal, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-medium bg-[#060c18] border border-blue-900/60 text-slate-300"
+                >
+                  <CheckCircle2 className="w-3 h-3 text-cyan-400" />
+                  {goal}
                 </span>
-              </h2>
-              <p className="text-xs text-slate-300">Proactive smart recommendations synthesized for your shop</p>
+              ))}
             </div>
           </div>
-          <button
-            onClick={() => onNavigate('assistant')}
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-cyan-300 hover:text-white bg-cyan-950/50 hover:bg-cyan-900/60 border border-cyan-500/30 px-3 py-1.5 rounded-xl transition-all hover:-translate-y-0.5 shadow-xs"
-          >
-            Ask AI Assistant
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
 
-        {/* Insight Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {insights.map((ins, i) => (
-            <div
-              key={ins.id || i}
-              className="bg-[#080f1d]/80 hover:bg-[#0c1830] transition-all duration-200 border border-cyan-500/20 hover:border-cyan-400/40 rounded-xl p-3.5 flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-md hover:shadow-cyan-950/40"
-            >
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold mb-1.5">
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      ins.type === 'positive'
-                        ? 'bg-emerald-400 shadow-[0_0_6px_#34d399]'
-                        : ins.type === 'warning'
-                        ? 'bg-amber-400 shadow-[0_0_6px_#fbbf24]'
-                        : ins.type === 'alert'
-                        ? 'bg-rose-400 shadow-[0_0_6px_#f87171]'
-                        : 'bg-cyan-400 shadow-[0_0_6px_#22d3ee]'
-                    }`}
-                  />
-                  <span className="text-white font-semibold">{ins.title}</span>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed">{ins.description}</p>
+          {/* Right: Targets Progress Bars */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 lg:gap-6 bg-[#060c18]/80 p-3 rounded-xl border border-blue-900/50">
+            {/* Sales vs Daily Target */}
+            <div className="min-w-[160px]">
+              <div className="flex items-center justify-between text-[11px] mb-1">
+                <span className="text-slate-400">Daily Sales vs Target</span>
+                <span className="font-mono font-bold text-cyan-300">
+                  {formatCurrency(metrics.todaySales, settings.currency)} /{' '}
+                  {businessProfile.approxDailySales > 0
+                    ? formatCurrency(businessProfile.approxDailySales, settings.currency)
+                    : 'Target'}
+                </span>
               </div>
-              {ins.actionText && (
-                <div className="pt-2.5 text-[11px] font-semibold text-cyan-400 flex items-center gap-1 cursor-pointer hover:text-cyan-200 transition-colors">
-                  <span>{ins.actionText}</span>
-                  <ChevronRight className="w-3 h-3" />
-                </div>
-              )}
+              <div className="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-linear-to-r from-cyan-500 to-emerald-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(34,211,238,0.4)]"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.round(
+                        (metrics.todaySales / Math.max(1, businessProfile.approxDailySales || 1)) *
+                          100
+                      )
+                    )}%`,
+                  }}
+                />
+              </div>
+              <div className="text-[10px] text-slate-500 text-right mt-0.5 font-mono">
+                {businessProfile.approxDailySales > 0
+                  ? `${Math.round(
+                      (metrics.todaySales / businessProfile.approxDailySales) * 100
+                    )}% achieved today`
+                  : 'Set target in setup'}
+              </div>
             </div>
-          ))}
+
+            {/* Quick Actions inside tracker */}
+            <div className="flex items-center gap-2 border-t sm:border-t-0 sm:border-l border-blue-900/60 pt-2 sm:pt-0 sm:pl-3">
+              <button
+                onClick={() => setIsDailyUpdateOpen(true)}
+                className="px-3 py-1.5 text-[11px] font-bold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-lg transition-all"
+              >
+                + Log Today
+              </button>
+              <button
+                onClick={() => setIsSetupModalOpen(true)}
+                className="px-2.5 py-1.5 text-[11px] text-slate-400 hover:text-white bg-blue-950/40 rounded-lg border border-blue-900/50 transition-all"
+                title="Update questionnaire answers"
+              >
+                Edit Goals
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* AI Business Command Center */}
+      <AiCommandCenter
+        onNavigate={onNavigate}
+        onOpenAddSale={onOpenAddSale}
+        onOpenAddExpense={onOpenAddExpense}
+        onOpenAddProduct={onOpenAddProduct}
+        onOpenAddCustomer={onOpenAddCustomer}
+      />
 
       {/* Primary KPI Metrics: Today's Snapshot */}
       <div>
@@ -339,7 +324,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex items-center justify-between text-xs font-medium text-slate-400">
               <span>Today's Net Profit</span>
               <span className="w-7 h-7 rounded-lg bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-[0_0_8px_rgba(34,211,238,0.2)]">
-                <DollarSign className="w-4 h-4" />
+                <IndianRupee className="w-4 h-4" />
               </span>
             </div>
             <div
@@ -697,6 +682,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Daily Business Update Modal */}
+      <DailyBusinessUpdateModal
+        isOpen={isDailyUpdateOpen}
+        onClose={() => setIsDailyUpdateOpen(false)}
+      />
+
+      {/* Business Setup Questionnaire Modal */}
+      <BusinessSetupModal
+        isOpen={isSetupModalOpen}
+        onClose={() => setIsSetupModalOpen(false)}
+      />
     </div>
   );
 };

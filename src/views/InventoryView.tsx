@@ -7,7 +7,6 @@ import {
   Filter,
   AlertTriangle,
   CheckCircle2,
-  DollarSign,
   Edit2,
   Trash2,
   History,

@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Store,
   AlertTriangle,
+  LogOut,
 } from 'lucide-react';
 import { useBusiness } from '../../context/BusinessContext';
 
@@ -39,7 +40,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   onNavigate,
   children,
 }) => {
-  const { settings, metrics, notifications } = useBusiness();
+  const { settings, metrics, notifications, user, logout } = useBusiness();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const unreadNotifications = notifications.filter((n) => !n.read).length;
@@ -225,22 +226,35 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         <div className="p-3.5 border-t border-blue-950/60 bg-[#070d1a] flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-full bg-blue-950 text-cyan-300 border border-cyan-500/30 font-bold text-xs flex items-center justify-center">
-              {settings.ownerName.charAt(0) || 'U'}
+              {(user?.name || settings.ownerName).charAt(0) || 'U'}
             </div>
             <div className="min-w-0">
               <span className="text-xs font-bold text-white block truncate">
-                {settings.ownerName}
+                {user?.name || settings.ownerName}
               </span>
-              <span className="text-[10px] text-slate-400 block truncate">Business Manager</span>
+              <span className="text-[10px] text-slate-400 block truncate">{user?.email || 'Business Manager'}</span>
             </div>
           </div>
-          <button
-            onClick={() => handleNavClick('settings')}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-blue-950/60 transition-colors"
-            title="Settings"
-          >
-            <SettingsIcon className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => handleNavClick('settings')}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-blue-950/60 transition-colors cursor-pointer"
+              title="Settings"
+            >
+              <SettingsIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => {
+                if (confirm('Sign out of your business workspace?')) {
+                  logout();
+                }
+              }}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -311,9 +325,23 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               })}
             </nav>
 
-            <div className="p-4 border-t border-blue-950/60 bg-[#060b16] text-xs text-slate-400">
-              <div className="font-semibold text-slate-200">{settings.businessName}</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">{settings.address}</div>
+            <div className="p-4 border-t border-blue-950/60 bg-[#060b16] text-xs text-slate-400 flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="font-semibold text-slate-200 truncate">{user?.name || settings.businessName}</div>
+                <div className="text-[11px] text-slate-500 truncate">{user?.email || settings.ownerName}</div>
+              </div>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (confirm('Sign out of your business workspace?')) {
+                    logout();
+                  }
+                }}
+                className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>

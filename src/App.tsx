@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { BusinessProvider } from './context/BusinessContext';
+import React, { useState, useEffect } from 'react';
+import { Store, Loader2 } from 'lucide-react';
+import { BusinessProvider, useBusiness } from './context/BusinessContext';
 import { AppLayout } from './components/layout/AppLayout';
 
 // Views
+import { AuthScreen } from './views/AuthScreen';
 import { DashboardView } from './views/DashboardView';
 import { SalesView } from './views/SalesView';
 import { CustomersView } from './views/CustomersView';
@@ -29,11 +31,14 @@ import { AddExpenseModal } from './components/modals/AddExpenseModal';
 import { CollectPaymentModal } from './components/modals/CollectPaymentModal';
 import { InvoicePreviewModal } from './components/modals/InvoicePreviewModal';
 import { CustomerDetailModal } from './components/modals/CustomerDetailModal';
+import { BusinessSetupModal } from './components/modals/BusinessSetupModal';
+import { SignUpModal } from './components/modals/SignUpModal';
 
 // Types
 import { Customer, Product, Expense, Invoice } from './types';
 
 function MainAppContent() {
+  const { user, isAuthLoading, businessProfile } = useBusiness();
   const [currentSection, setCurrentSection] = useState<string>('dashboard');
 
   // Modal states
@@ -60,6 +65,37 @@ function MainAppContent() {
 
   const [isCustomerDetailOpen, setIsCustomerDetailOpen] = useState(false);
   const [selectedCustomerDetail, setSelectedCustomerDetail] = useState<Customer | null>(null);
+
+  // Business Onboarding Setup Questionnaire & Sign Up Modals
+  const [isBusinessSetupOpen, setIsBusinessSetupOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+
+  // Auto-launch Business Setup Questionnaire if not yet completed (e.g. after sign up)
+  useEffect(() => {
+    if (user && businessProfile && !businessProfile.hasCompletedSetup) {
+      setIsBusinessSetupOpen(true);
+    }
+  }, [user, businessProfile?.hasCompletedSetup]);
+
+  // Loading state while verifying Supabase persistent session
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#060b17] flex flex-col items-center justify-center text-slate-200">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center shadow-xl shadow-cyan-950/60 border border-cyan-400/40 mb-4 animate-pulse">
+          <Store className="w-7 h-7 text-white" />
+        </div>
+        <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-400">
+          <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+          <span>Verifying secure business session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Authentication Gate: Non-authenticated users cannot access the dashboard
+  if (!user) {
+    return <AuthScreen />;
+  }
 
   // Quick Action Handlers
   const handleOpenAddSale = (preselectedCustId?: string) => {
@@ -258,6 +294,19 @@ function MainAppContent() {
         onRecordPayment={(cust) => handleOpenCollectPayment(cust)}
         onNewSale={(cust) => handleOpenAddSale(cust.id)}
         onEdit={(cust) => handleEditCustomer(cust)}
+      />
+
+      {/* Business Setup Questionnaire Modal */}
+      <BusinessSetupModal
+        isOpen={isBusinessSetupOpen}
+        onClose={() => setIsBusinessSetupOpen(false)}
+      />
+
+      {/* Sign Up Modal (Triggers Questionnaire immediately upon submit) */}
+      <SignUpModal
+        isOpen={isSignUpOpen}
+        onClose={() => setIsSignUpOpen(false)}
+        onSignedUp={() => setIsBusinessSetupOpen(true)}
       />
     </AppLayout>
   );

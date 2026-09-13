@@ -10,17 +10,41 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertTriangle,
+  Sparkles,
+  UserPlus,
+  Target,
+  Check,
+  LogOut,
+  ShieldCheck,
+  User,
 } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { BusinessSettings } from '../types';
+import { BusinessSetupModal } from '../components/modals/BusinessSetupModal';
+import { SignUpModal } from '../components/modals/SignUpModal';
 
 export const SettingsView: React.FC = () => {
-  const { settings, updateSettings, resetToDemoData, sales, products, customers, expenses, payments, invoices } =
-    useBusiness();
+  const {
+    settings,
+    updateSettings,
+    resetToDemoData,
+    sales,
+    products,
+    customers,
+    expenses,
+    payments,
+    invoices,
+    businessProfile,
+    user,
+    logout,
+  } = useBusiness();
 
   const [formData, setFormData] = useState<BusinessSettings>({ ...settings });
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,8 +223,8 @@ export const SettingsView: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                 className="w-full text-xs theme-input px-3 py-2.5"
               >
-                <option value="$" className="bg-slate-900 text-white">$ (USD - United States Dollar)</option>
                 <option value="₹" className="bg-slate-900 text-white">₹ (INR - Indian Rupee)</option>
+                <option value="$" className="bg-slate-900 text-white">$ (USD - United States Dollar)</option>
                 <option value="€" className="bg-slate-900 text-white">€ (EUR - Euro)</option>
                 <option value="£" className="bg-slate-900 text-white">£ (GBP - British Pound)</option>
                 <option value="C$" className="bg-slate-900 text-white">C$ (CAD - Canadian Dollar)</option>
@@ -322,6 +346,152 @@ export const SettingsView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Business Setup Questionnaire & AI Personalization Profile */}
+      <div className="theme-card p-5 sm:p-6 theme-card-hover space-y-4">
+        <div className="flex items-center justify-between border-b border-blue-900/60 pb-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-white">
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>AI Business Profile & Onboarding Questionnaire</span>
+          </div>
+          <span className="px-2.5 py-0.5 text-[11px] font-bold bg-cyan-950/70 text-cyan-300 rounded-full border border-cyan-500/30">
+            {businessProfile.hasCompletedSetup ? 'Profile Active' : 'Setup Incomplete'}
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-400 leading-relaxed">
+          The Business Setup Questionnaire personalizes your dashboard metrics, financial targets, and AI Command Center recommendations based on your store category, daily sales goals, and accepted payment methods.
+        </p>
+
+        {/* Current profile summary grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#060c18] p-4 rounded-xl border border-blue-900/50 text-xs">
+          <div>
+            <span className="text-[11px] text-slate-400 block">Business Category</span>
+            <span className="font-bold text-cyan-300">{businessProfile.businessType || 'Retail Store'}</span>
+          </div>
+          <div>
+            <span className="text-[11px] text-slate-400 block">Daily Target Sales</span>
+            <span className="font-bold text-emerald-400 font-mono">
+              {settings.currency}{businessProfile.approxDailySales?.toLocaleString() || '0'}/day
+            </span>
+          </div>
+          <div>
+            <span className="text-[11px] text-slate-400 block">Target Daily Expenses</span>
+            <span className="font-bold text-rose-300 font-mono">
+              {settings.currency}{businessProfile.approxDailyExpenses?.toLocaleString() || '0'}/day
+            </span>
+          </div>
+          <div className="sm:col-span-2">
+            <span className="text-[11px] text-slate-400 block mb-1">Products & Services Description</span>
+            <span className="text-slate-300 text-[11px] leading-relaxed">
+              {businessProfile.productsServices || 'General merchandise and retail goods.'}
+            </span>
+          </div>
+          <div>
+            <span className="text-[11px] text-slate-400 block">Payment Methods</span>
+            <span className="text-slate-300 text-[11px]">
+              {(businessProfile.paymentMethods || []).join(', ') || 'Cash, UPI'}
+            </span>
+          </div>
+        </div>
+
+        {/* Stated Business Goals */}
+        <div>
+          <span className="text-[11px] font-semibold text-slate-400 block mb-1.5">
+            Active Strategic Goals:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {(businessProfile.businessGoals || []).map((goal, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-[#081224] text-cyan-300 border border-cyan-500/30"
+              >
+                <Check className="w-3.5 h-3.5 text-cyan-400" />
+                {goal}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => setIsSetupModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 theme-btn-primary rounded-xl"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Edit Business Setup Questionnaire
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsSignUpModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 theme-btn-secondary rounded-xl text-cyan-300 border-cyan-500/30 hover:border-cyan-400/50"
+          >
+            <UserPlus className="w-3.5 h-3.5 text-cyan-400" />
+            Simulate New Sign Up Flow
+          </button>
+        </div>
+      </div>
+
+      {/* Authentication & User Session Management */}
+      <div className="theme-card p-5 sm:p-6 theme-card-hover space-y-4">
+        <div className="flex items-center justify-between border-b border-blue-900/60 pb-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-white">
+            <ShieldCheck className="w-4 h-4 text-cyan-400" />
+            <span>Account & Authentication</span>
+          </div>
+          <span className="px-2.5 py-0.5 text-[11px] font-bold bg-cyan-950/70 text-cyan-300 rounded-full border border-cyan-500/30">
+            {isSupabaseConfigured ? 'Supabase Cloud Auth' : 'Persistent Workspace Session'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#060c18] p-4 rounded-xl border border-blue-900/50 text-xs">
+          <div>
+            <span className="text-[11px] text-slate-400 block">Signed-in User</span>
+            <span className="font-bold text-white">{user?.name || settings.ownerName}</span>
+          </div>
+          <div>
+            <span className="text-[11px] text-slate-400 block">Account Email</span>
+            <span className="font-medium text-cyan-300 truncate block">{user?.email || 'owner@store.in'}</span>
+          </div>
+          <div>
+            <span className="text-[11px] text-slate-400 block">Workspace Role</span>
+            <span className="font-bold text-emerald-400">{user?.role || 'Owner & Administrator'}</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <p className="text-xs text-slate-400">
+            Your login session is securely maintained. Signing out will return you to the authentication screen.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('Sign out of your business workspace?')) {
+                logout();
+              }
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-rose-950/50 hover:bg-rose-900/60 text-rose-300 border border-rose-500/30 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Sign Out of Account
+          </button>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <BusinessSetupModal
+        isOpen={isSetupModalOpen}
+        onClose={() => setIsSetupModalOpen(false)}
+      />
+
+      <SignUpModal
+        isOpen={isSignUpModalOpen}
+        onClose={() => setIsSignUpModalOpen(false)}
+        onSignedUp={() => setIsSetupModalOpen(true)}
+      />
     </div>
   );
 };

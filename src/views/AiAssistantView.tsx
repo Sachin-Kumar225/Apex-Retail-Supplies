@@ -114,7 +114,7 @@ export const AiAssistantView: React.FC = () => {
       });
 
       const data = await res.json();
-      const reply = data.reply || 'I am ready to assist with your business figures.';
+      const reply = data.response || data.reply || 'I am ready to assist with your business figures.';
 
       const assistantMessage: ChatMessage = {
         id: `ai-${Date.now()}`,

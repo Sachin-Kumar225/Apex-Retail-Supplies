@@ -197,7 +197,7 @@ export const InvoicesView: React.FC<InvoicesViewProps> = ({
                           {formatCurrency(inv.balanceDue, settings.currency)}
                         </span>
                       ) : (
-                        <span className="text-slate-500 font-normal">$0.00</span>
+                        <span className="text-slate-500 font-normal">{formatCurrency(0, settings.currency)}</span>
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-center">
