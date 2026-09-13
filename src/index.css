@@ -1,0 +1,180 @@
+@import "tailwindcss";
+
+@layer utilities {
+  /* Print Optimization for invoices */
+  @media print {
+    body {
+      background: white !important;
+      color: black !important;
+    }
+    .no-print,
+    header,
+    aside,
+    nav {
+      display: none !important;
+    }
+    .print\:p-0 {
+      padding: 0 !important;
+    }
+    .print\:m-0 {
+      margin: 0 !important;
+    }
+  }
+}
+
+/* Custom dark scrollbars with subtle cyan highlight */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #070d19;
+}
+::-webkit-scrollbar-thumb {
+  background: #172644;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #22d3ee55;
+}
+
+/* Base Body Style */
+body {
+  background-color: #060b17;
+  color: #e2e8f0;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Reusable Deep-Blue Card & Elevation Utilities */
+.theme-card {
+  background-color: #0c1527;
+  border: 1px solid rgba(30, 58, 102, 0.45);
+  box-shadow: 0 4px 20px -2px rgba(2, 6, 23, 0.5);
+  border-radius: 1rem;
+}
+
+.theme-card-hover {
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.3);
+  box-shadow: 0 12px 30px -4px rgba(2, 6, 23, 0.7), 0 0 16px -2px rgba(34, 211, 238, 0.08);
+}
+
+/* Primary Cyan/Blue Action Button */
+.theme-btn-primary {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0891b2 100%);
+  color: #ffffff;
+  font-weight: 700;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.25);
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-btn-primary:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.35);
+  border-color: rgba(56, 189, 248, 0.6);
+}
+.theme-btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary Button with soft elevation */
+.theme-btn-secondary {
+  background-color: #0f1c33;
+  color: #cbd5e1;
+  border: 1px solid rgba(30, 58, 102, 0.6);
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-btn-secondary:hover {
+  background-color: #152646;
+  color: #ffffff;
+  border-color: rgba(56, 189, 248, 0.35);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 15px rgba(2, 6, 23, 0.4);
+}
+.theme-btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* Input Fields */
+.theme-input {
+  background-color: #080f1d;
+  color: #f1f5f9;
+  border: 1px solid rgba(30, 58, 102, 0.6);
+  transition: all 0.18s ease;
+}
+.theme-input:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.18);
+  outline: none;
+}
+.theme-input::placeholder {
+  color: #475569;
+}
+
+/* Sidebar Item Glow Line Effect */
+.nav-glow-item {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-glow-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+  opacity: 0;
+  transform: scaleY(0.5);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-glow-item:hover::before {
+  opacity: 0.8;
+  transform: scaleY(1);
+}
+.nav-glow-item.active-nav-glow {
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.12) 0%, rgba(12, 21, 39, 0.6) 100%);
+  color: #38bdf8;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  box-shadow: 0 0 16px -2px rgba(6, 182, 212, 0.15);
+}
+.nav-glow-item.active-nav-glow::before {
+  opacity: 1;
+  transform: scaleY(1);
+  top: 0.35rem;
+  bottom: 0.35rem;
+  width: 3.5px;
+  background-color: #22d3ee;
+  box-shadow: 0 0 12px #22d3ee, 0 0 5px #38bdf8;
+}
+
+/* Markdown styling inside AI chat responses */
+.markdown-body ul {
+  list-style-type: disc;
+  margin-left: 1.25rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-body ol {
+  list-style-type: decimal;
+  margin-left: 1.25rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-body p {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.markdown-body strong {
+  font-weight: 700;
+  color: #38bdf8;
+}
+

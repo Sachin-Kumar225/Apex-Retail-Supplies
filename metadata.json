@@ -1,0 +1,6 @@
+{
+  "name": "AI Personal Business Manager",
+  "description": "All-in-one business management, sales, khata, inventory, invoices, and AI business advisory platform for small businesses and shop owners.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
