@@ -15,6 +15,7 @@ import {
   Briefcase,
   ShieldCheck,
   Zap,
+  LogOut,
 } from 'lucide-react';
 import { useBusiness } from '../../context/BusinessContext';
 import { BusinessProfile } from '../../types';
@@ -56,7 +57,7 @@ export const BusinessSetupModal: React.FC<BusinessSetupModalProps> = ({
   isSignUpFlow = false,
   isStandaloneOnboarding = false,
 }) => {
-  const { businessProfile, saveBusinessProfile, signUp, settings, user } = useBusiness();
+  const { businessProfile, saveBusinessProfile, signUp, settings, user, logout } = useBusiness();
 
   // Step state: 0 = Sign Up (if flow), 1 = Identity & Type, 2 = Products & Daily Volume, 3 = Payments & Goals
   const [currentStep, setCurrentStep] = useState(isSignUpFlow ? 0 : 1);
@@ -180,8 +181,19 @@ export const BusinessSetupModal: React.FC<BusinessSetupModalProps> = ({
             </div>
           </div>
 
-          {!isStandaloneOnboarding && (
+          {isStandaloneOnboarding ? (
             <button
+              type="button"
+              onClick={() => logout()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-300 hover:text-rose-400 bg-blue-950/40 hover:bg-rose-950/40 text-xs font-semibold border border-blue-900/50 hover:border-rose-500/30 transition-all cursor-pointer"
+              title="Sign Out to Login Screen"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          ) : (
+            <button
+              type="button"
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-blue-950/60 transition-colors"
             >

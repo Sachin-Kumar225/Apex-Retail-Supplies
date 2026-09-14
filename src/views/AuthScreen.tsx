@@ -641,7 +641,7 @@ export const AuthScreen: React.FC = () => {
                 type="button"
                 onClick={handleQuickDemoLogin}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-blue-950/70 hover:bg-blue-900/70 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-blue-950/70 hover:bg-blue-900/70 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 transition-all cursor-pointer hover-light-btn"
                 title="Log in directly as active demo owner with existing sales and khata records"
               >
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
@@ -654,7 +654,7 @@ export const AuthScreen: React.FC = () => {
                   signUp('Rohit Verma', 'rohit@apexstore.in', 'Apex Supermarket');
                 }}
                 disabled={isLoading}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/60 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/60 transition-all cursor-pointer hover-light-btn"
                 title="Create account and go straight to the business setup questions"
               >
                 <Store className="w-3.5 h-3.5 text-emerald-400" />

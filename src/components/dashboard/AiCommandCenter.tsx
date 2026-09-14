@@ -420,10 +420,10 @@ export const AiCommandCenter: React.FC<AiCommandCenterProps> = ({
               <div
                 key={pillar.pillar}
                 onClick={() => setPillarFilter(isSelected ? 'all' : pillar.pillar)}
-                className={`group cursor-pointer rounded-xl p-3.5 transition-all duration-200 border flex flex-col justify-between hover:-translate-y-0.5 ${
+                className={`group cursor-pointer rounded-xl p-3.5 border flex flex-col justify-between hover-pop theme-card-hover ${
                   isSelected
-                    ? 'bg-[#0f2244] border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.25)] ring-1 ring-cyan-400'
-                    : 'bg-[#071122]/80 hover:bg-[#0c1a33] border-blue-900/50 hover:border-cyan-500/40 hover:shadow-lg hover:shadow-cyan-950/30'
+                    ? 'bg-[#0f2244] border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.35)] ring-1 ring-cyan-400'
+                    : 'bg-[#071122]/80 hover:bg-[#0c1a33] border-blue-900/50'
                 }`}
               >
                 <div>
@@ -541,12 +541,12 @@ export const AiCommandCenter: React.FC<AiCommandCenterProps> = ({
               return (
                 <div
                   key={item.id}
-                  className={`rounded-xl p-4 transition-all duration-200 border flex flex-col justify-between hover:-translate-y-0.5 ${
+                  className={`rounded-xl p-4 border flex flex-col justify-between theme-card-hover hover-pop ${
                     isWarning
-                      ? 'bg-rose-950/20 border-rose-500/30 hover:border-rose-400/50 hover:shadow-lg hover:shadow-rose-950/40'
+                      ? 'bg-rose-950/20 border-rose-500/30'
                       : isRec
-                      ? 'bg-cyan-950/20 border-cyan-500/30 hover:border-cyan-400/50 hover:shadow-lg hover:shadow-cyan-950/40'
-                      : 'bg-[#081224] border-blue-900/50 hover:border-cyan-500/40 hover:shadow-lg hover:shadow-cyan-950/30'
+                      ? 'bg-cyan-950/20 border-cyan-500/30'
+                      : 'bg-[#081224] border-blue-900/50'
                   }`}
                 >
                   <div>

@@ -211,7 +211,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {(businessProfile.businessGoals || []).map((goal, idx) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-medium bg-[#060c18] border border-blue-900/60 text-slate-300"
+                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-medium bg-[#060c18] border border-blue-900/60 text-slate-300 hover-light-glow cursor-default"
                 >
                   <CheckCircle2 className="w-3 h-3 text-cyan-400" />
                   {goal}
@@ -385,7 +385,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Pending Khata Payments */}
           <div
             onClick={() => onNavigate('payments')}
-            className="theme-card p-4 border-amber-500/30 hover:border-amber-400/50 hover:shadow-[0_0_18px_rgba(245,158,11,0.15)] cursor-pointer transition-all duration-200 hover:-translate-y-0.5"
+            className="theme-card p-4 theme-card-hover border-amber-500/30 hover:border-amber-400/70 cursor-pointer"
           >
             <div className="flex items-center justify-between text-[11px] font-semibold text-amber-300">
               <span>Khata Dues (Pending)</span>
@@ -432,10 +432,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Low Stock Alerts */}
           <div
             onClick={() => onNavigate('products')}
-            className={`rounded-xl p-4 border transition-all duration-200 hover:-translate-y-0.5 cursor-pointer sm:col-span-2 lg:col-span-2 ${
+            className={`rounded-xl p-4 border cursor-pointer sm:col-span-2 lg:col-span-2 theme-card-hover ${
               metrics.lowStockProducts > 0
-                ? 'bg-rose-950/20 border-rose-500/40 hover:border-rose-400/60 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
-                : 'theme-card theme-card-hover'
+                ? 'bg-rose-950/25 border-rose-500/40 hover:border-rose-400/80 shadow-[0_0_20px_rgba(244,63,94,0.15)]'
+                : 'theme-card'
             }`}
           >
             <div className="flex items-center justify-between text-[11px] font-semibold">

@@ -468,12 +468,13 @@ export const SettingsView: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => {
-              if (confirm('Sign out of your business workspace?')) {
-                logout();
-              }
+            onClick={(e) => {
+              e.preventDefault();
+              logout();
             }}
             className="inline-flex items-center gap-2 px-4 py-2 bg-rose-950/50 hover:bg-rose-900/60 text-rose-300 border border-rose-500/30 text-xs font-semibold rounded-xl transition-all duration-200 cursor-pointer"
+            title="Sign Out of Account"
+            aria-label="Sign Out of Account"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign Out of Account

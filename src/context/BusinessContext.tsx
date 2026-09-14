@@ -401,9 +401,17 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const logout = () => {
-    authSignOut();
+    try {
+      authSignOut().catch((err) => console.warn('Supabase sign out notice:', err));
+    } catch (e) {
+      console.warn('Sign out caught:', e);
+    }
     setUser(null);
-    localStorage.removeItem(`${STORAGE_KEY}_user`);
+    try {
+      localStorage.removeItem(`${STORAGE_KEY}_user`);
+    } catch (e) {
+      console.warn('Local storage removal warning:', e);
+    }
   };
 
   const signUp = (name: string, email: string, businessName?: string) => {

@@ -303,76 +303,296 @@ body {
   background-color: rgba(12, 21, 39, 0.82);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(56, 189, 248, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.2);
   box-shadow: 0 8px 32px -4px rgba(2, 6, 23, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
+  position: relative;
 }
 
+/* Luminous Hover Light Effect & Spring Pop-up for Cards */
 .theme-card-hover {
-  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.theme-card-hover:hover {
-  transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.4);
-  box-shadow: 0 16px 40px -6px rgba(2, 6, 23, 0.8), 0 0 24px -2px rgba(34, 211, 238, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, box-shadow;
 }
 
-/* Primary Cyan/Blue Action Button */
+/* Specular top neon light line */
+.theme-card-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.9), #22d3ee, #a5f3fc, rgba(147, 197, 253, 0.9), transparent);
+  opacity: 0;
+  filter: blur(0.5px);
+  transition: opacity 0.32s ease, left 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), right 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.32s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Specular diagonal iridescent light beam sweep */
+.theme-card-hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 28%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(34, 211, 238, 0.35) 49%,
+    rgba(165, 243, 252, 0.55) 51%,
+    rgba(56, 189, 248, 0.3) 54%,
+    rgba(255, 255, 255, 0.15) 60%,
+    transparent 72%,
+    transparent 100%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.75s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* Spring Pop-up & High-Contrast Halo on Card Hover */
+.theme-card-hover:hover {
+  transform: translateY(-5px) scale(1.018);
+  border-color: rgba(34, 211, 238, 0.85);
+  box-shadow:
+    0 0 45px -5px rgba(34, 211, 238, 0.55),
+    0 0 90px -10px rgba(14, 165, 233, 0.35),
+    0 24px 50px -12px rgba(2, 6, 23, 0.9),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.6),
+    inset 0 0 30px rgba(34, 211, 238, 0.16);
+  z-index: 10;
+}
+
+.theme-card-hover:hover::before {
+  opacity: 1;
+  left: 3%;
+  right: 3%;
+  box-shadow: 0 0 16px 2px #22d3ee, 0 0 32px 5px rgba(56, 189, 248, 0.75);
+}
+
+.theme-card-hover:hover::after {
+  transform: translateX(130%);
+  opacity: 1;
+}
+
+/* Subtle icon flare inside cards when card is hovered */
+.theme-card-hover:hover svg {
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.75));
+  transition: filter 0.25s ease;
+}
+
+/* Primary Action Button with Tactile Pop-up & Radiant Laser Shimmer */
 .theme-btn-primary {
+  position: relative;
+  overflow: hidden;
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #0891b2 100%);
   color: #ffffff;
   font-weight: 700;
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.25);
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.theme-btn-primary:hover {
-  transform: translateY(-1.5px);
-  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.35);
-  border-color: rgba(56, 189, 248, 0.6);
-}
-.theme-btn-primary:active {
-  transform: translateY(0);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.2s ease,
+              background 0.2s ease;
+  will-change: transform, box-shadow;
 }
 
-/* Secondary Button with soft elevation */
+.theme-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.theme-btn-primary:hover {
+  transform: translateY(-3px) scale(1.035);
+  border-color: #a5f3fc;
+  box-shadow:
+    0 0 35px rgba(34, 211, 238, 0.95),
+    0 0 70px rgba(14, 165, 233, 0.6),
+    0 12px 28px -4px rgba(2, 132, 199, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.theme-btn-primary:hover::after {
+  transform: translateX(120%);
+}
+
+.theme-btn-primary:active {
+  transform: translateY(0px) scale(0.97);
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.5);
+  transition: transform 0.1s ease;
+}
+
+/* Secondary Button with Tactile Pop-up & Ambient Halo */
 .theme-btn-secondary {
+  position: relative;
   background-color: #0f1c33;
   color: #cbd5e1;
-  border: 1px solid rgba(30, 58, 102, 0.6);
-  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.theme-btn-secondary:hover {
-  background-color: #152646;
-  color: #ffffff;
-  border-color: rgba(56, 189, 248, 0.35);
-  transform: translateY(-1.5px);
-  box-shadow: 0 4px 15px rgba(2, 6, 23, 0.4);
-}
-.theme-btn-secondary:active {
-  transform: translateY(0);
+  border: 1px solid rgba(30, 58, 102, 0.8);
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.2s ease,
+              background-color 0.2s ease,
+              color 0.15s ease;
+  will-change: transform, box-shadow;
 }
 
-/* Input Fields */
+.theme-btn-secondary:hover {
+  background-color: #162a4d;
+  color: #ffffff;
+  border-color: rgba(34, 211, 238, 0.85);
+  transform: translateY(-2.5px) scale(1.03);
+  box-shadow:
+    0 0 28px rgba(56, 189, 248, 0.65),
+    0 0 55px rgba(34, 211, 238, 0.35),
+    0 10px 24px -4px rgba(2, 6, 23, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.theme-btn-secondary:active {
+  transform: translateY(0px) scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* Universal Button Pop-Up & Hover Light for Interactive Buttons in the System */
+button:not(:disabled):not(.no-pop),
+[role="button"]:not(.no-pop),
+.hover-pop {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.2s ease,
+              background-color 0.2s ease,
+              color 0.15s ease;
+  will-change: transform;
+}
+
+button:not(:disabled):not(.theme-btn-primary):not(.theme-btn-secondary):not(.no-pop):hover,
+[role="button"]:not(.theme-btn-primary):not(.theme-btn-secondary):not(.no-pop):hover,
+.hover-pop:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+button:not(:disabled):not(.no-pop):active,
+[role="button"]:not(.no-pop):active,
+.hover-pop:active {
+  transform: translateY(0px) scale(0.97);
+}
+
+/* Quick Action & Chip Hover Light Button */
+.hover-light-btn {
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.24s ease,
+              border-color 0.2s ease,
+              background-color 0.2s ease;
+}
+
+.hover-light-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 0 22px rgba(34, 211, 238, 0.45), 0 6px 18px rgba(2, 6, 23, 0.6);
+  border-color: rgba(34, 211, 238, 0.7);
+}
+
+.hover-light-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Table & List Row Pop-up & High-Contrast Light Wash */
+.hover-light-row,
+tbody tr {
+  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease,
+              box-shadow 0.24s ease;
+  position: relative;
+}
+
+.hover-light-row:hover,
+tbody tr:hover {
+  transform: translateY(-1.5px) scale(1.006);
+  z-index: 5;
+  background: linear-gradient(
+    90deg,
+    rgba(6, 182, 212, 0.2) 0%,
+    rgba(30, 58, 102, 0.55) 50%,
+    rgba(6, 182, 212, 0.1) 100%
+  ) !important;
+  box-shadow:
+    inset 4px 0 0 0 #22d3ee,
+    0 8px 24px rgba(2, 6, 23, 0.7),
+    0 0 26px rgba(34, 211, 238, 0.32);
+}
+
+/* Badges, Chips, Pills and Mini-Icons Pop-up & Glow */
+.hover-light-glow {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+              filter 0.25s ease,
+              box-shadow 0.25s ease,
+              border-color 0.2s ease;
+}
+
+.hover-light-glow:hover {
+  transform: translateY(-2px) scale(1.08);
+  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.95));
+  box-shadow: 0 0 22px rgba(34, 211, 238, 0.6);
+  border-color: rgba(34, 211, 238, 0.85);
+}
+
+/* Input Fields with Light Focus & Pop */
 .theme-input {
   background-color: #080f1d;
   color: #f1f5f9;
   border: 1px solid rgba(30, 58, 102, 0.6);
-  transition: all 0.18s ease;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
 }
+
+.theme-input:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.7);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.22);
+}
+
 .theme-input:focus {
+  transform: translateY(-1.5px);
   border-color: #22d3ee;
-  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.18);
+  box-shadow:
+    0 0 0 2px rgba(34, 211, 238, 0.3),
+    0 0 28px rgba(34, 211, 238, 0.45);
   outline: none;
 }
+
 .theme-input::placeholder {
   color: #475569;
 }
 
-/* Sidebar Item Glow Line Effect */
+/* Sidebar Item Glow Line & Pop-up Effect */
 .nav-glow-item {
   position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.2s ease,
+              box-shadow 0.24s ease,
+              border-color 0.2s ease,
+              color 0.15s ease;
+  will-change: transform;
 }
 .nav-glow-item::before {
   content: '';
@@ -386,17 +606,25 @@ body {
   box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
   opacity: 0;
   transform: scaleY(0.5);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-glow-item:hover {
+  transform: translateX(5px) scale(1.025);
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.2) 0%, rgba(30, 58, 102, 0.45) 100%);
+  color: #ffffff;
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .nav-glow-item:hover::before {
-  opacity: 0.8;
+  opacity: 1;
   transform: scaleY(1);
+  box-shadow: 0 0 16px #22d3ee, 0 0 8px #38bdf8;
 }
 .nav-glow-item.active-nav-glow {
-  background: linear-gradient(90deg, rgba(6, 182, 212, 0.12) 0%, rgba(12, 21, 39, 0.6) 100%);
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.18) 0%, rgba(12, 21, 39, 0.6) 100%);
   color: #38bdf8;
-  border: 1px solid rgba(34, 211, 238, 0.28);
-  box-shadow: 0 0 16px -2px rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  box-shadow: 0 0 20px -2px rgba(6, 182, 212, 0.25);
 }
 .nav-glow-item.active-nav-glow::before {
   opacity: 1;
@@ -405,7 +633,7 @@ body {
   bottom: 0.35rem;
   width: 3.5px;
   background-color: #22d3ee;
-  box-shadow: 0 0 12px #22d3ee, 0 0 5px #38bdf8;
+  box-shadow: 0 0 14px #22d3ee, 0 0 6px #38bdf8;
 }
 
 /* Markdown styling inside AI chat responses */

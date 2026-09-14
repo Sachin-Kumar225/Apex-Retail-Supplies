@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -13,14 +13,11 @@ import {
   Settings as SettingsIcon,
   Menu,
   X,
-  ChevronRight,
-  Store,
-  AlertTriangle,
   LogOut,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useBusiness } from '../../context/BusinessContext';
 import { AmbientBacklight } from './AmbientBacklight';
-import { safeConfirm } from '../../utils/formatters';
 
 interface AppLayoutProps {
   currentSection: string;
@@ -43,7 +40,18 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   children,
 }) => {
   const { settings, metrics, notifications, user, logout } = useBusiness();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [navMenuOpen, setNavMenuOpen] = useState(false);
+
+  // Close drawer on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setNavMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const unreadNotifications = notifications.filter((n) => !n.read).length;
 
@@ -88,309 +96,267 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
   const handleNavClick = (id: string) => {
     onNavigate(id);
-    setMobileMenuOpen(false);
+    setNavMenuOpen(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#060b17] flex flex-col md:flex-row text-slate-200 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#060b17] flex flex-col text-slate-200 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
       {/* Multi-Colour Lighting From Backside */}
       <AmbientBacklight intensity="high" showGrid={true} />
 
-      {/* Mobile Top Header */}
-      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[#080e1e]/85 backdrop-blur-xl border-b border-blue-900/40 sticky top-0 z-40 shadow-lg shadow-black/50">
-        <div className="flex items-center gap-2.5">
+      {/* Top Header Bar with Three Small Lines Menu Button at Top-Left */}
+      <header className="sticky top-0 z-30 flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3 bg-[#080e1e]/90 backdrop-blur-xl border-b border-blue-900/40 shadow-lg shadow-black/50">
+        {/* Top Left: Three small lines button + Business Branding */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Three Small Lines Hamburger Button */}
           <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-blue-950/60 transition-colors"
-            aria-label="Open menu"
+            id="main-nav-hamburger-btn"
+            onClick={() => setNavMenuOpen(true)}
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#0a1529]/90 hover:bg-[#0f2244] border border-blue-900/70 hover:border-cyan-400/80 text-slate-200 hover:text-cyan-300 shadow-md shadow-black/40 transition-all cursor-pointer hover-pop group"
+            aria-label="Open Navigation Menu"
+            title="Navigation Menu"
           >
-            <Menu className="w-5 h-5" />
+            {/* Visual Three Small Lines */}
+            <div className="flex flex-col justify-center items-center w-5 h-4.5 gap-[3.5px]" aria-hidden="true">
+              <span className="w-4.5 h-[2px] bg-cyan-400 rounded-full group-hover:w-5 group-hover:bg-cyan-300 transition-all shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+              <span className="w-3.5 h-[2px] bg-cyan-400 rounded-full group-hover:w-5 group-hover:bg-cyan-300 transition-all shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+              <span className="w-4.5 h-[2px] bg-cyan-400 rounded-full group-hover:w-5 group-hover:bg-cyan-300 transition-all shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+            </div>
+            <span className="text-xs font-bold tracking-wide uppercase text-slate-300 group-hover:text-cyan-200 hidden sm:inline">
+              Menu
+            </span>
           </button>
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => handleNavClick('dashboard')}>
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white font-black flex items-center justify-center shadow-md shadow-cyan-950/50 text-sm border border-cyan-400/30">
+
+          {/* Business Branding & Active Screen Indicator */}
+          <div
+            onClick={() => handleNavClick('dashboard')}
+            className="flex items-center gap-2.5 cursor-pointer group"
+            title="Go to Dashboard"
+          >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-sky-600 to-cyan-500 text-white font-black flex items-center justify-center shadow-md shadow-cyan-950/50 text-sm border border-cyan-400/30 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.5)] transition-all">
               {settings.businessName.charAt(0) || 'B'}
             </div>
-            <div className="truncate max-w-[150px]">
-              <span className="font-extrabold text-sm text-white block truncate">
-                {settings.businessName}
-              </span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-sm sm:text-base text-white truncate group-hover:text-cyan-300 transition-colors">
+                  {settings.businessName}
+                </span>
+                <span className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-lg bg-blue-950/60 border border-blue-900/50 text-cyan-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_6px_#22d3ee]" />
+                  {navItems.find((item) => item.id === currentSection)?.label || currentSection}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        {/* Top Right: AI quick assistant, Notifications, User info */}
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => handleNavClick('assistant')}
-            className="p-2 rounded-xl text-cyan-400 hover:bg-cyan-950/40 transition-colors relative"
-            title="AI Assistant"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-cyan-300 bg-cyan-950/40 hover:bg-cyan-900/50 border border-cyan-500/40 hover:border-cyan-400/80 transition-all text-xs font-bold hover-pop cursor-pointer shadow-sm shadow-cyan-950/40"
+            title="AI Business Advisor"
           >
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            <span className="hidden sm:inline">AI Advisor</span>
           </button>
+
           <button
             onClick={() => handleNavClick('notifications')}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-blue-950/60 transition-colors relative"
+            className="p-2 rounded-xl text-slate-300 hover:text-white bg-[#0b172e] hover:bg-blue-900/40 border border-blue-900/60 hover:border-cyan-500/40 transition-all relative hover-pop cursor-pointer"
             title="Notifications"
+            aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadNotifications > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan-400 ring-2 ring-[#080e1e] shadow-[0_0_8px_#22d3ee]"></span>
+              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-cyan-500 text-[#080e1e] text-[9px] font-black flex items-center justify-center ring-2 ring-[#080e1e] shadow-[0_0_8px_#22d3ee]">
+                {unreadNotifications}
+              </span>
             )}
           </button>
+
+          {/* User Profile Avatar Quick Trigger */}
+          <div
+            onClick={() => setNavMenuOpen(true)}
+            className="flex items-center gap-2 pl-1 cursor-pointer group"
+            title="Account & Navigation"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-900 to-cyan-950 text-cyan-300 border border-cyan-500/40 font-bold text-xs flex items-center justify-center group-hover:border-cyan-400 group-hover:shadow-[0_0_10px_rgba(34,211,238,0.4)] transition-all">
+              {(user?.name || settings.ownerName).charAt(0) || 'U'}
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Desktop Persistent Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-[#080e1e]/85 backdrop-blur-xl border-r border-blue-900/40 h-screen sticky top-0 z-30 shrink-0 select-none shadow-2xl shadow-black/40">
-        {/* Brand Banner */}
-        <div className="p-5 border-b border-blue-950/60 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-sky-600 to-cyan-500 text-white font-black text-lg flex items-center justify-center shadow-lg shadow-cyan-950/40 border border-cyan-400/30">
-            {settings.businessName.charAt(0) || 'B'}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-black text-white truncate leading-tight tracking-tight">
-              {settings.businessName}
-            </h2>
-            <p className="text-[11px] text-slate-400 truncate mt-0.5 font-medium">
-              {settings.ownerName}
-            </p>
-          </div>
-        </div>
-
-        {/* Navigation List */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentSection === item.id;
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold nav-glow-item ${
-                  isActive
-                    ? 'active-nav-glow font-bold'
-                    : item.isAi
-                    ? 'text-cyan-300 bg-cyan-950/25 hover:bg-cyan-950/40 border border-cyan-900/30'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-blue-950/30'
-                }`}
-              >
-                <div className="flex items-center gap-3 truncate">
-                  <Icon
-                    className={`w-4 h-4 shrink-0 transition-colors ${
-                      isActive
-                        ? 'text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]'
-                        : item.isAi
-                        ? 'text-cyan-400'
-                        : 'text-slate-500 group-hover:text-slate-300'
-                    }`}
-                  />
-                  <span className="truncate">{item.label}</span>
-                </div>
-
-                {item.badge !== undefined && (
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold ${
-                      isActive
-                        ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-[0_0_8px_rgba(34,211,238,0.2)]'
-                        : item.badgeColor
-                        ? item.badgeColor
-                        : 'bg-slate-800 text-slate-300'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Operational Health Badge */}
-        <div className="p-3.5 mx-3 mb-3 bg-[#0c1527] border border-blue-900/40 rounded-xl text-xs shadow-xs">
-          <div className="flex items-center justify-between font-semibold text-slate-300">
-            <span className="text-[11px] text-slate-400">Inventory Status</span>
-            <span className={metrics.lowStockProducts > 0 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
-              {metrics.lowStockProducts > 0 ? `${metrics.lowStockProducts} low stock` : 'Optimal'}
-            </span>
-          </div>
-          <div className="w-full bg-slate-900 rounded-full h-1.5 mt-2.5 overflow-hidden border border-slate-800">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                metrics.lowStockProducts > 0
-                  ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]'
-                  : 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
-              }`}
-              style={{
-                width: `${Math.max(10, Math.min(100, 100 - metrics.lowStockProducts * 15))}%`,
-              }}
+      {/* Slide-out Navigation Drawer containing all features */}
+      <AnimatePresence>
+        {navMenuOpen && (
+          <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setNavMenuOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
             />
-          </div>
-        </div>
 
-        {/* Footer Account Summary */}
-        <div className="p-3.5 border-t border-blue-950/60 bg-[#070d1a] flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-blue-950 text-cyan-300 border border-cyan-500/30 font-bold text-xs flex items-center justify-center">
-              {(user?.name || settings.ownerName).charAt(0) || 'U'}
-            </div>
-            <div className="min-w-0">
-              <span className="text-xs font-bold text-white block truncate">
-                {user?.name || settings.ownerName}
-              </span>
-              <span className="text-[10px] text-slate-400 block truncate">{user?.email || 'Business Manager'}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => handleNavClick('settings')}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-blue-950/60 transition-colors cursor-pointer"
-              title="Settings"
+            {/* Slide-out Drawer Panel */}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+              className="relative w-80 max-w-[85vw] bg-[#080e1e]/98 backdrop-blur-2xl border-r border-cyan-500/30 h-full flex flex-col z-10 shadow-2xl shadow-cyan-950/60"
             >
-              <SettingsIcon className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => {
-                if (safeConfirm('Sign out of your business workspace?')) {
-                  logout();
-                }
-              }}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
-              title="Sign Out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Mobile Drawer (Slide-out for all 11 sections) */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
-          {/* Backdrop */}
-          <div
-            onClick={() => setMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/75 backdrop-blur-xs"
-          />
-
-          {/* Drawer Menu */}
-          <div className="relative w-4/5 max-w-xs bg-[#080e1e] border-r border-blue-950/80 h-full flex flex-col z-10 shadow-2xl">
-            <div className="p-4 border-b border-blue-950/60 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white font-black flex items-center justify-center shadow-xs border border-cyan-400/30">
-                  {settings.businessName.charAt(0) || 'B'}
+              {/* Drawer Header */}
+              <div className="p-4 sm:p-5 border-b border-blue-950/80 flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-sky-600 to-cyan-500 text-white font-black text-base flex items-center justify-center shadow-lg shadow-cyan-950/50 border border-cyan-400/30 shrink-0">
+                    {settings.businessName.charAt(0) || 'B'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-sm font-black text-white truncate leading-tight">
+                      {settings.businessName}
+                    </h2>
+                    <p className="text-[11px] text-cyan-400 truncate mt-0.5 font-medium">
+                      {settings.ownerName}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white truncate">
-                    {settings.businessName}
-                  </h3>
-                  <p className="text-[11px] text-slate-400">{settings.ownerName}</p>
-                </div>
+
+                <button
+                  onClick={() => setNavMenuOpen(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-blue-950/60 border border-transparent hover:border-blue-800/60 transition-colors cursor-pointer hover-pop"
+                  aria-label="Close menu"
+                  title="Close Menu (Esc)"
+                >
+                  <X className="w-5 h-5 text-slate-300" />
+                </button>
               </div>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-blue-950/60"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <nav className="flex-1 overflow-y-auto p-3 space-y-1.5">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentSection === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleNavClick(item.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold nav-glow-item ${
-                      isActive
-                        ? 'active-nav-glow font-bold'
-                        : item.isAi
-                        ? 'text-cyan-300 bg-cyan-950/25'
-                        : 'text-slate-400 hover:text-slate-100 hover:bg-blue-950/30'
+              {/* Navigation Items (All items: Dashboard, Sales, Customers, Product/Stock, Expenses, Payment Khata, Invoices, Reports, AI, Notifications, Settings) */}
+              <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5 custom-scrollbar">
+                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  Navigation
+                </div>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = currentSection === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleNavClick(item.id)}
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold nav-glow-item cursor-pointer ${
+                        isActive
+                          ? 'active-nav-glow font-bold'
+                          : item.isAi
+                          ? 'text-cyan-300 bg-cyan-950/25 hover:bg-cyan-950/40 border border-cyan-900/30'
+                          : 'text-slate-400 hover:text-slate-100 hover:bg-blue-950/30'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 truncate">
+                        <Icon
+                          className={`w-4 h-4 shrink-0 transition-colors ${
+                            isActive
+                              ? 'text-cyan-300 drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]'
+                              : item.isAi
+                              ? 'text-cyan-400'
+                              : 'text-slate-500'
+                          }`}
+                        />
+                        <span className="truncate">{item.label}</span>
+                      </div>
+
+                      {item.badge !== undefined && (
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold ${
+                            isActive
+                              ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40 shadow-[0_0_8px_rgba(34,211,238,0.2)]'
+                              : item.badgeColor
+                              ? item.badgeColor
+                              : 'bg-slate-800 text-slate-300'
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+
+              {/* Operational Health Status */}
+              <div className="p-3.5 mx-3 mb-3 bg-[#0c1527] border border-blue-900/40 rounded-xl text-xs shadow-xs">
+                <div className="flex items-center justify-between font-semibold text-slate-300">
+                  <span className="text-[11px] text-slate-400">Inventory Status</span>
+                  <span className={metrics.lowStockProducts > 0 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
+                    {metrics.lowStockProducts > 0 ? `${metrics.lowStockProducts} low stock` : 'Optimal'}
+                  </span>
+                </div>
+                <div className="w-full bg-slate-900 rounded-full h-1.5 mt-2.5 overflow-hidden border border-slate-800">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      metrics.lowStockProducts > 0
+                        ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]'
+                        : 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
                     }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon className={`w-4 h-4 ${isActive ? 'text-cyan-300' : ''}`} />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge !== undefined && (
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                          isActive
-                            ? 'bg-cyan-400/20 text-cyan-200 border border-cyan-400/40'
-                            : item.badgeColor || 'bg-slate-800 text-slate-300'
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-
-            <div className="p-4 border-t border-blue-950/60 bg-[#060b16] text-xs text-slate-400 flex items-center justify-between">
-              <div className="min-w-0">
-                <div className="font-semibold text-slate-200 truncate">{user?.name || settings.businessName}</div>
-                <div className="text-[11px] text-slate-500 truncate">{user?.email || settings.ownerName}</div>
+                    style={{
+                      width: `${Math.max(10, Math.min(100, 100 - metrics.lowStockProducts * 15))}%`,
+                    }}
+                  />
+                </div>
               </div>
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (safeConfirm('Sign out of your business workspace?')) {
-                    logout();
-                  }
-                }}
-                className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors"
-                title="Sign Out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Main Content Area */}
-      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full mb-16 md:mb-0">
+              {/* Footer Account Summary & Logout */}
+              <div className="p-3.5 border-t border-blue-950/80 bg-[#070d1a] flex items-center justify-between">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-blue-950 text-cyan-300 border border-cyan-500/30 font-bold text-xs flex items-center justify-center shrink-0">
+                    {(user?.name || settings.ownerName).charAt(0) || 'U'}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs font-bold text-white block truncate">
+                      {user?.name || settings.ownerName}
+                    </span>
+                    <span className="text-[10px] text-slate-400 block truncate">{user?.email || 'Business Manager'}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleNavClick('settings')}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-blue-950/60 transition-colors cursor-pointer"
+                    title="Settings"
+                  >
+                    <SettingsIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setNavMenuOpen(false);
+                      logout();
+                    }}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                    title="Sign Out"
+                    aria-label="Sign Out"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content Area - Full Screen Width */}
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
         {children}
       </main>
-
-      {/* Mobile Bottom Quick-Action Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#080e1e]/95 backdrop-blur-md border-t border-blue-950/80 py-1.5 px-3 flex items-center justify-around z-40 shadow-xl shadow-black">
-        {[
-          { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-          { id: 'sales', label: 'Sales', icon: ShoppingCart },
-          { id: 'payments', label: 'Khata', icon: CreditCard },
-          { id: 'products', label: 'Stock', icon: Package },
-          { id: 'assistant', label: 'AI Assistant', icon: Sparkles, isAi: true },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = currentSection === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleNavClick(tab.id)}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
-                isActive
-                  ? 'text-cyan-400 font-bold'
-                  : tab.isAi
-                  ? 'text-cyan-300'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <div className={`relative ${tab.isAi ? 'p-1 rounded-lg bg-cyan-950/50' : ''}`}>
-                <Icon className={`w-4 h-4 ${isActive ? 'stroke-[2.5] drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]' : ''}`} />
-                {tab.id === 'payments' && metrics.pendingPayments > 0 && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400 ring-1 ring-[#080e1e] shadow-[0_0_6px_#f59e0b]" />
-                )}
-              </div>
-              <span className="text-[10px] mt-0.5">{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 };
