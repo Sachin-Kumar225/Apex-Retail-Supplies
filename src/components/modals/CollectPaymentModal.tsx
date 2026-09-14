@@ -69,7 +69,7 @@ export const CollectPaymentModal: React.FC<CollectPaymentModalProps> = ({
       amount: Number(amount),
       paymentMethod,
       notes: notes.trim(),
-      date: new Date(paymentDate).toISOString(),
+      date: paymentDate ? new Date(`${paymentDate}T12:00:00`).toISOString() : new Date().toISOString(),
     });
 
     if (rec) {

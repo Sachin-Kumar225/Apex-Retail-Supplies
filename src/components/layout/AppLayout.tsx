@@ -19,6 +19,8 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useBusiness } from '../../context/BusinessContext';
+import { AmbientBacklight } from './AmbientBacklight';
+import { safeConfirm } from '../../utils/formatters';
 
 interface AppLayoutProps {
   currentSection: string;
@@ -90,9 +92,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#060b17] flex flex-col md:flex-row text-slate-200 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen bg-[#060b17] flex flex-col md:flex-row text-slate-200 font-sans antialiased selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
+      {/* Multi-Colour Lighting From Backside */}
+      <AmbientBacklight intensity="high" showGrid={true} />
+
       {/* Mobile Top Header */}
-      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[#080e1e]/95 backdrop-blur-md border-b border-blue-950/70 sticky top-0 z-40 shadow-lg shadow-black/40">
+      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-[#080e1e]/85 backdrop-blur-xl border-b border-blue-900/40 sticky top-0 z-40 shadow-lg shadow-black/50">
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setMobileMenuOpen(true)}
@@ -135,7 +140,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       </header>
 
       {/* Desktop Persistent Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-[#080e1e] border-r border-blue-950/70 h-screen sticky top-0 z-30 shrink-0 select-none">
+      <aside className="hidden md:flex flex-col w-64 bg-[#080e1e]/85 backdrop-blur-xl border-r border-blue-900/40 h-screen sticky top-0 z-30 shrink-0 select-none shadow-2xl shadow-black/40">
         {/* Brand Banner */}
         <div className="p-5 border-b border-blue-950/60 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-sky-600 to-cyan-500 text-white font-black text-lg flex items-center justify-center shadow-lg shadow-cyan-950/40 border border-cyan-400/30">
@@ -245,7 +250,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             </button>
             <button
               onClick={() => {
-                if (confirm('Sign out of your business workspace?')) {
+                if (safeConfirm('Sign out of your business workspace?')) {
                   logout();
                 }
               }}
@@ -333,7 +338,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  if (confirm('Sign out of your business workspace?')) {
+                  if (safeConfirm('Sign out of your business workspace?')) {
                     logout();
                   }
                 }}

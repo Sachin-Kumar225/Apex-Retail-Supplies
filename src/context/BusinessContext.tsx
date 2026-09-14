@@ -122,17 +122,16 @@ const STORAGE_KEY = 'vyapar_business_mgr_data_v1';
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Authentication state (null if unauthenticated)
+  // Authentication state: starts as null so opening the app displays the login info screen, not dashboard
   const [user, setUser] = useState<UserProfile | null>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_user`);
-    if (!saved) return null;
     try {
-      return JSON.parse(saved);
+      localStorage.removeItem(`${STORAGE_KEY}_user`);
     } catch {
-      return null;
+      // ignore
     }
+    return null;
   });
-  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(false);
 
   const [settings, setSettings] = useState<BusinessSettings>(() => {
     const saved = localStorage.getItem(`${STORAGE_KEY}_settings`);

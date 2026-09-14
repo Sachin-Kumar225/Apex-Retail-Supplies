@@ -17,6 +17,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useBusiness } from '../context/BusinessContext';
+import { AmbientBacklight } from '../components/layout/AmbientBacklight';
 import {
   authSignIn,
   authSignUp,
@@ -31,8 +32,8 @@ export const AuthScreen: React.FC = () => {
   const { login, signUp, settings } = useBusiness();
 
   const [mode, setMode] = useState<AuthMode>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('owner@store.com');
+  const [password, setPassword] = useState('password123');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [businessName, setBusinessName] = useState('');
@@ -48,8 +49,13 @@ export const AuthScreen: React.FC = () => {
     setMode(newMode);
     setErrorMessage(null);
     setSuccessMessage(null);
-    setPassword('');
-    setConfirmPassword('');
+    if (newMode === 'signin') {
+      setEmail('owner@store.com');
+      setPassword('password123');
+    } else {
+      setPassword('');
+      setConfirmPassword('');
+    }
   };
 
   const validateEmail = (val: string): boolean => {
@@ -206,17 +212,23 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#060b17] flex flex-col justify-center items-center px-4 py-8 relative selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* Subtle Ambient Radial Gradients */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-80 h-80 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+    <div className="min-h-screen bg-[#060b17] flex flex-col justify-center items-center px-4 py-8 relative selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden">
+      {/* Multi-Colour Lighting From Backside */}
+      <AmbientBacklight intensity="high" showGrid={true} />
 
       {/* Container */}
       <div className="relative z-10 w-full max-w-md">
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white shadow-xl shadow-cyan-950/60 border border-cyan-400/40 mb-3.5">
-            <Store className="w-7 h-7 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-[11px] font-semibold mb-3 shadow-[0_0_15px_rgba(34,211,238,0.25)]">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            <span>AI-Powered Commerce & Finance Cloud</span>
+          </div>
+
+          <div className="flex items-center justify-center mb-3">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-sky-500 to-cyan-400 text-white shadow-xl shadow-cyan-950/60 border border-cyan-400/40 flex items-center justify-center">
+              <Store className="w-7 h-7 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" />
+            </div>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white">
             {settings.businessName || 'Vyapar Business Manager'}
@@ -226,13 +238,18 @@ export const AuthScreen: React.FC = () => {
           </p>
         </div>
 
-        {/* Main Card */}
-        <div className="bg-[#0b1426]/95 border border-blue-900/70 rounded-2xl shadow-2xl shadow-black/80 backdrop-blur-xl p-6 sm:p-7 relative overflow-hidden">
-          {/* Subtle Top Accent Border */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 via-cyan-400 to-indigo-600" />
+        {/* Main Card with Radiant Multi-Colour Backside Lighting Aura */}
+        <div className="relative group">
+          {/* Backside Intense Multi-Colour Lighting Halo */}
+          <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-cyan-400 via-purple-500 via-pink-500 to-sky-400 opacity-70 blur-xl group-hover:opacity-100 transition duration-700 animate-aura-spin pointer-events-none -z-10" />
+          <div className="absolute -inset-3 rounded-3xl bg-gradient-to-r from-blue-600 via-cyan-400 to-indigo-600 opacity-35 blur-2xl pointer-events-none -z-10" />
 
-          {/* Mode Switcher Tabs (Only when not in forgot password) */}
-          {mode !== 'forgot' && (
+          <div className="bg-[#0b1426]/90 border border-cyan-400/30 rounded-2xl shadow-[0_0_50px_rgba(34,211,238,0.25)] backdrop-blur-2xl p-6 sm:p-7 relative overflow-hidden">
+            {/* Subtle Top Accent Border with Electric Glow */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-300 via-purple-400 to-pink-500 shadow-[0_0_12px_#38bdf8]" />
+
+            {/* Mode Switcher Tabs (Only when not in forgot password) */}
+            {mode !== 'forgot' && (
             <div className="flex rounded-xl bg-[#060d1d] p-1 border border-blue-950 mb-5">
               <button
                 type="button"
@@ -310,6 +327,41 @@ export const AuthScreen: React.FC = () => {
           {/* SIGN IN FORM */}
           {mode === 'signin' && (
             <form onSubmit={handleSignIn} className="space-y-4">
+              {/* Prominent Login Credentials Info Card */}
+              <div className="p-3.5 rounded-xl bg-blue-950/70 border border-cyan-500/40 text-xs text-slate-300 shadow-[0_0_20px_rgba(34,211,238,0.15)]">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center border border-cyan-400/30">
+                      <KeyRound className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-white text-xs block leading-tight">Demo Login Info</span>
+                      <span className="text-[10px] text-cyan-300/80">Ready-to-use account credentials</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('owner@store.com');
+                      setPassword('password123');
+                    }}
+                    className="text-[10px] font-bold px-2 py-1 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-900/60 transition-colors cursor-pointer"
+                  >
+                    Auto-Fill
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px] bg-[#060e1d]/85 p-2 rounded-lg border border-blue-900/50">
+                  <div>
+                    <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Email</span>
+                    <span className="font-mono text-cyan-200 select-all font-semibold break-all">owner@store.com</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">Password</span>
+                    <span className="font-mono text-cyan-200 select-all font-semibold">password123</span>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Email Address
@@ -517,7 +569,7 @@ export const AuthScreen: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    Complete Registration & Open Dashboard
+                    Create Account & Start Business Setup
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -578,22 +630,39 @@ export const AuthScreen: React.FC = () => {
             </form>
           )}
 
-          {/* Quick Demo Access Option */}
-          <div className="mt-5 pt-4 border-t border-blue-900/50">
-            <div className="relative flex justify-center text-[10px] uppercase font-bold text-slate-500 mb-3">
-              <span className="bg-[#0b1426] px-2.5 tracking-wider">Instant Preview Access</span>
+          {/* Quick Access Options */}
+          <div className="mt-5 pt-4 border-t border-blue-900/50 space-y-2">
+            <div className="relative flex justify-center text-[10px] uppercase font-bold text-slate-500 mb-2">
+              <span className="bg-[#0b1426] px-2.5 tracking-wider">Fast Testing & Preview</span>
             </div>
 
-            <button
-              type="button"
-              onClick={handleQuickDemoLogin}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold bg-blue-950/70 hover:bg-blue-900/70 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 transition-all cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Explore as Demo Owner ({initialUser.name})</span>
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleQuickDemoLogin}
+                disabled={isLoading}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-blue-950/70 hover:bg-blue-900/70 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 transition-all cursor-pointer"
+                title="Log in directly as active demo owner with existing sales and khata records"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Demo Owner (Dashboard)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  signUp('Rohit Verma', 'rohit@apexstore.in', 'Apex Supermarket');
+                }}
+                disabled={isLoading}
+                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold bg-emerald-950/50 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/60 transition-all cursor-pointer"
+                title="Create account and go straight to the business setup questions"
+              >
+                <Store className="w-3.5 h-3.5 text-emerald-400" />
+                <span>New Store (Test Questions)</span>
+              </button>
+            </div>
           </div>
+        </div>
         </div>
 
         {/* Footer Security Badge & Supabase Auth Status */}

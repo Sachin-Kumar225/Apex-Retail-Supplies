@@ -38,7 +38,7 @@ import { SignUpModal } from './components/modals/SignUpModal';
 import { Customer, Product, Expense, Invoice } from './types';
 
 function MainAppContent() {
-  const { user, isAuthLoading, businessProfile } = useBusiness();
+  const { user, isAuthLoading, businessProfile, customers } = useBusiness();
   const [currentSection, setCurrentSection] = useState<string>('dashboard');
 
   // Modal states
@@ -95,6 +95,19 @@ function MainAppContent() {
   // Authentication Gate: Non-authenticated users cannot access the dashboard
   if (!user) {
     return <AuthScreen />;
+  }
+
+  // Business Onboarding Questions Gate:
+  // After sign in or sign up, if business questions are not yet answered,
+  // show the business setup questions first. After answering them, the full dashboard is displayed!
+  if (!businessProfile || !businessProfile.hasCompletedSetup) {
+    return (
+      <BusinessSetupModal
+        isOpen={true}
+        onClose={() => {}}
+        isStandaloneOnboarding={true}
+      />
+    );
   }
 
   // Quick Action Handlers

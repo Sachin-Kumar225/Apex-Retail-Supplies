@@ -18,11 +18,13 @@ import {
 } from 'lucide-react';
 import { useBusiness } from '../../context/BusinessContext';
 import { BusinessProfile } from '../../types';
+import { AmbientBacklight } from '../layout/AmbientBacklight';
 
 interface BusinessSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
   isSignUpFlow?: boolean;
+  isStandaloneOnboarding?: boolean;
 }
 
 const BUSINESS_TYPES = [
@@ -52,29 +54,36 @@ export const BusinessSetupModal: React.FC<BusinessSetupModalProps> = ({
   isOpen,
   onClose,
   isSignUpFlow = false,
+  isStandaloneOnboarding = false,
 }) => {
-  const { businessProfile, saveBusinessProfile, signUp, settings } = useBusiness();
+  const { businessProfile, saveBusinessProfile, signUp, settings, user } = useBusiness();
 
   // Step state: 0 = Sign Up (if flow), 1 = Identity & Type, 2 = Products & Daily Volume, 3 = Payments & Goals
   const [currentStep, setCurrentStep] = useState(isSignUpFlow ? 0 : 1);
 
   // Sign up fields
-  const [signUpName, setSignUpName] = useState(businessProfile.ownerName || 'Rajesh Sharma');
-  const [signUpEmail, setSignUpEmail] = useState('rajesh@apexretail.com');
+  const [signUpName, setSignUpName] = useState(businessProfile.ownerName || user?.name || 'Store Owner');
+  const [signUpEmail, setSignUpEmail] = useState(user?.email || 'owner@vyapar.in');
   const [signUpPassword, setSignUpPassword] = useState('••••••••');
   const [roleTitle, setRoleTitle] = useState('Owner & Administrator');
 
   // Questionnaire form state
   const [formData, setFormData] = useState<BusinessProfile>({
     ...businessProfile,
+    businessName: businessProfile.businessName || settings.businessName || '',
+    ownerName: businessProfile.ownerName || user?.name || settings.ownerName || '',
   });
 
   useEffect(() => {
     if (isOpen) {
-      setFormData({ ...businessProfile });
+      setFormData({
+        ...businessProfile,
+        businessName: businessProfile.businessName || settings.businessName || '',
+        ownerName: businessProfile.ownerName || user?.name || settings.ownerName || '',
+      });
       setCurrentStep(isSignUpFlow ? 0 : 1);
     }
-  }, [isOpen, businessProfile, isSignUpFlow]);
+  }, [isOpen, businessProfile, isSignUpFlow, settings, user]);
 
   if (!isOpen) return null;
 
@@ -131,11 +140,24 @@ export const BusinessSetupModal: React.FC<BusinessSetupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-[#0a1324] border border-cyan-500/40 rounded-2xl shadow-2xl shadow-cyan-950/40 text-slate-200 overflow-hidden my-6">
-        {/* Subtle Ambient Glow */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto ${
+        isStandaloneOnboarding
+          ? 'bg-[#060b17] min-h-screen'
+          : 'bg-black/80 backdrop-blur-sm'
+      }`}
+    >
+      {isStandaloneOnboarding && <AmbientBacklight intensity="high" showGrid={true} />}
+
+      <div className="relative w-full max-w-2xl my-6">
+        {/* Backside Intense Lighting Halo */}
+        <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-cyan-400 via-purple-500 via-pink-500 to-sky-400 opacity-60 blur-2xl animate-aura-spin pointer-events-none -z-10" />
+        <div className="absolute -inset-3 rounded-3xl bg-gradient-to-r from-blue-600 via-cyan-400 to-indigo-600 opacity-30 blur-3xl pointer-events-none -z-10" />
+
+        <div className="relative w-full bg-[#0a1324]/95 border border-cyan-500/50 rounded-2xl shadow-[0_0_50px_rgba(34,211,238,0.25)] text-slate-200 overflow-hidden backdrop-blur-xl">
+          {/* Subtle Ambient Glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
         {/* Header */}
         <div className="relative z-10 px-6 py-5 border-b border-blue-900/50 flex items-center justify-between bg-[#080e1c]">
@@ -145,7 +167,7 @@ export const BusinessSetupModal: React.FC<BusinessSetupModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
-                {currentStep === 0 ? 'Sign Up & Register Store' : 'Business Setup Questionnaire'}
+                {currentStep === 0 ? 'Sign Up & Register Store' : 'Tell Us About Your Business'}
                 <span className="text-[10px] font-bold bg-cyan-950/80 text-cyan-300 px-2 py-0.5 rounded-full border border-cyan-500/30">
                   {currentStep === 0 ? 'Step 1 of 4' : `Step ${currentStep} of 3`}
                 </span>
@@ -153,17 +175,19 @@ export const BusinessSetupModal: React.FC<BusinessSetupModalProps> = ({
               <p className="text-xs text-slate-400">
                 {currentStep === 0
                   ? 'Create your account to unlock AI-powered business management'
-                  : 'Personalize your dashboard benchmarks, daily targets, and AI command center'}
+                  : 'Answer a few quick questions to personalize your dashboard benchmarks and AI commands'}
               </p>
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-blue-950/60 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!isStandaloneOnboarding && (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-blue-950/60 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Step Progress Bar */}
@@ -586,13 +610,24 @@ export const BusinessSetupModal: React.FC<BusinessSetupModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
+            {isStandaloneOnboarding ? (
+              <button
+                type="button"
+                onClick={handleSaveQuestionnaire}
+                className="px-3 py-2 text-xs font-semibold text-slate-400 hover:text-cyan-300 transition-colors"
+                title="Use recommended default benchmarks"
+              >
+                Use Defaults & Launch Dashboard →
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+            )}
 
             {currentStep < 3 ? (
               <button
@@ -613,13 +648,14 @@ export const BusinessSetupModal: React.FC<BusinessSetupModalProps> = ({
               <button
                 type="button"
                 onClick={handleSaveQuestionnaire}
-                className="px-5 py-2 theme-btn-primary rounded-xl text-xs font-bold flex items-center gap-2 shadow-[0_0_15px_rgba(34,211,238,0.35)]"
+                className="px-5 py-2 theme-btn-primary rounded-xl text-xs font-bold flex items-center gap-2 shadow-[0_0_20px_rgba(34,211,238,0.45)]"
               >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Save Profile & Personalize Dashboard</span>
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-200" />
+                <span>Save Profile & Launch Dashboard 🚀</span>
               </button>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>

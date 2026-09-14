@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, ShoppingCart, AlertCircle } from 'lucide-react';
 import { useBusiness } from '../../context/BusinessContext';
 import { PaymentMethod } from '../../types';
@@ -39,6 +39,31 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({
   const [saleDate, setSaleDate] = useState(new Date().toISOString().split('T')[0]);
   const [notes, setNotes] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      if (preselectedCustomerId) {
+        setCustomerId(preselectedCustomerId);
+      } else if (customers.length > 0 && (!customerId || !customers.some((c) => c.id === customerId))) {
+        setCustomerId(customers[0].id);
+      }
+      setTaxRate(settings.defaultTaxRate || 0);
+      setErrorMsg('');
+
+      // If items row has empty product, initialize with first available product
+      if (items.length === 0 || !items[0].productId) {
+        if (products.length > 0) {
+          setItems([
+            {
+              productId: products[0].id,
+              quantity: 1,
+              unitPrice: products[0].sellingPrice,
+            },
+          ]);
+        }
+      }
+    }
+  }, [isOpen, preselectedCustomerId, customers, settings.defaultTaxRate]);
 
   if (!isOpen) return null;
 
@@ -119,6 +144,11 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({
       }
     }
 
+    // Create ISO date anchored to local noon to avoid UTC midnight date rollback
+    const formattedSaleDate = saleDate
+      ? new Date(`${saleDate}T12:00:00`).toISOString()
+      : new Date().toISOString();
+
     const sale = addSale({
       customerId,
       items,
@@ -127,7 +157,7 @@ export const AddSaleModal: React.FC<AddSaleModalProps> = ({
       paidAmount: effectivePaid,
       paymentMethod,
       notes,
-      saleDate,
+      saleDate: formattedSaleDate,
     });
 
     if (sale) {

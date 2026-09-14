@@ -43,13 +43,268 @@ body {
   background-color: #060b17;
   color: #e2e8f0;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
 }
 
-/* Reusable Deep-Blue Card & Elevation Utilities */
+/* Multi-Colour Backlight Keyframes & Grid Textures */
+@keyframes backlightFloat1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(40px, 30px) scale(1.1);
+  }
+}
+
+@keyframes backlightFloat2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-35px, 35px) scale(1.08);
+  }
+}
+
+@keyframes backlightFloat3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-25px, -30px) scale(1.12);
+  }
+}
+
+@keyframes backlightFloat4 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -25px) scale(1.06);
+  }
+}
+
+@keyframes backlightPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.04);
+  }
+}
+
+/* Atmospheric lightning flash keyframes */
+@keyframes lightningFlash {
+  0%, 92%, 94%, 96%, 100% {
+    opacity: 0;
+  }
+  92.5% {
+    opacity: 0.45;
+  }
+  93% {
+    opacity: 0.15;
+  }
+  94.5% {
+    opacity: 0.7;
+  }
+  95% {
+    opacity: 0.2;
+  }
+  95.5% {
+    opacity: 0.85;
+  }
+}
+
+/* Electric lightning arc flicker */
+@keyframes lightningArcFlicker1 {
+  0%, 100% {
+    opacity: 0;
+    stroke-dashoffset: 800;
+  }
+  8%, 10% {
+    opacity: 0.95;
+    stroke-dashoffset: 0;
+  }
+  12% {
+    opacity: 0.3;
+    stroke-dashoffset: 50;
+  }
+  14% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  18%, 95% {
+    opacity: 0;
+    stroke-dashoffset: 800;
+  }
+}
+
+@keyframes lightningArcFlicker2 {
+  0%, 48%, 62%, 100% {
+    opacity: 0;
+    stroke-dashoffset: 800;
+  }
+  50% {
+    opacity: 0.9;
+    stroke-dashoffset: 0;
+  }
+  52% {
+    opacity: 0.2;
+  }
+  54% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  58% {
+    opacity: 0;
+  }
+}
+
+/* Volumetric rotating light shafts */
+@keyframes lightRayRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lightRayRotateReverse {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* Card backside aura border rotation */
+@keyframes auraSpin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.04);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+.animate-backlight-float-1 {
+  animation: backlightFloat1 18s ease-in-out infinite;
+}
+
+.animate-backlight-float-2 {
+  animation: backlightFloat2 22s ease-in-out infinite;
+}
+
+.animate-backlight-float-3 {
+  animation: backlightFloat3 16s ease-in-out infinite;
+}
+
+.animate-backlight-float-4 {
+  animation: backlightFloat4 20s ease-in-out infinite;
+}
+
+.animate-backlight-pulse {
+  animation: backlightPulse 10s ease-in-out infinite;
+}
+
+.animate-lightning-flash {
+  animation: lightningFlash 9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-lightning-flash-delayed {
+  animation: lightningFlash 13s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 4.5s;
+}
+
+.animate-lightning-arc-1 {
+  stroke-dasharray: 800;
+  animation: lightningArcFlicker1 7s ease-in-out infinite;
+}
+
+.animate-lightning-arc-2 {
+  stroke-dasharray: 800;
+  animation: lightningArcFlicker2 9s ease-in-out infinite;
+  animation-delay: 2.5s;
+}
+
+.animate-light-ray-rotate {
+  animation: lightRayRotate 35s linear infinite;
+}
+
+.animate-light-ray-reverse {
+  animation: lightRayRotateReverse 45s linear infinite;
+}
+
+.animate-aura-spin {
+  animation: auraSpin 12s linear infinite;
+}
+
+/* Volumetric light beam gradient utility */
+.light-ray-conic {
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(6, 182, 212, 0) 0deg,
+    rgba(6, 182, 212, 0.22) 20deg,
+    rgba(147, 51, 234, 0.25) 45deg,
+    rgba(236, 72, 153, 0) 70deg,
+    rgba(59, 130, 246, 0.2) 110deg,
+    rgba(34, 211, 238, 0) 140deg,
+    rgba(168, 85, 247, 0.22) 190deg,
+    rgba(245, 158, 11, 0.18) 220deg,
+    rgba(236, 72, 153, 0) 250deg,
+    rgba(6, 182, 212, 0.25) 300deg,
+    rgba(147, 51, 234, 0) 330deg,
+    rgba(6, 182, 212, 0) 360deg
+  );
+}
+
+/* Backside intense halo for cards */
+.card-backlight-rim {
+  position: relative;
+}
+.card-backlight-rim::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 25%, #9b51e0 50%, #f72585 75%, #00f2fe 100%);
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0.6;
+  filter: blur(14px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+.card-backlight-rim:hover::before {
+  opacity: 0.9;
+  filter: blur(20px);
+}
+
+/* High-tech matrix grid that catches ambient backlight */
+.bg-backlight-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 35%, black 40%, transparent 100%);
+}
+
+.bg-radial-vignette {
+  background: radial-gradient(circle at 50% 50%, transparent 50%, rgba(6, 11, 23, 0.7) 100%);
+}
+
+/* Reusable Deep-Blue Card & Elevation Utilities with Translucent Frosted Glass */
 .theme-card {
-  background-color: #0c1527;
-  border: 1px solid rgba(30, 58, 102, 0.45);
-  box-shadow: 0 4px 20px -2px rgba(2, 6, 23, 0.5);
+  background-color: rgba(12, 21, 39, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  box-shadow: 0 8px 32px -4px rgba(2, 6, 23, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
 }
 
@@ -58,8 +313,8 @@ body {
 }
 .theme-card-hover:hover {
   transform: translateY(-2px);
-  border-color: rgba(56, 189, 248, 0.3);
-  box-shadow: 0 12px 30px -4px rgba(2, 6, 23, 0.7), 0 0 16px -2px rgba(34, 211, 238, 0.08);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 16px 40px -6px rgba(2, 6, 23, 0.8), 0 0 24px -2px rgba(34, 211, 238, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
 }
 
 /* Primary Cyan/Blue Action Button */

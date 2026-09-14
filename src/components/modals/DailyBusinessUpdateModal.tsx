@@ -15,6 +15,7 @@ import {
   ChevronUp,
   Info,
   Users,
+  AlertCircle,
 } from 'lucide-react';
 import { useBusiness } from '../../context/BusinessContext';
 import { DailyBusinessUpdatePayload } from '../../types';
@@ -47,6 +48,7 @@ export const DailyBusinessUpdateModal: React.FC<DailyBusinessUpdateModalProps> =
   const [customerPayments, setCustomerPayments] = useState<number | ''>('');
   const [customerId, setCustomerId] = useState('');
   const [notes, setNotes] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Optional product breakdown
   const [showProductSection, setShowProductSection] = useState(false);
@@ -117,9 +119,10 @@ export const DailyBusinessUpdateModal: React.FC<DailyBusinessUpdateModalProps> =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg('');
 
     if (numSales <= 0 && numExpenses <= 0 && numSupplierPayments <= 0 && numCustomerPayments <= 0) {
-      alert('Please enter at least one value for sales, expenses, or payments.');
+      setErrorMsg('Please enter at least one value for sales, expenses, or payments.');
       return;
     }
 
@@ -175,6 +178,13 @@ export const DailyBusinessUpdateModal: React.FC<DailyBusinessUpdateModalProps> =
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {errorMsg && (
+          <div className="mx-6 mt-4 p-3 bg-rose-950/60 border border-rose-500/30 rounded-xl flex items-center gap-2.5 text-xs text-rose-300">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
 
         {/* Form Container */}
         <form onSubmit={handleSubmit} className="relative z-10 p-6 space-y-5 max-h-[75vh] overflow-y-auto">

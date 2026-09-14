@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ArrowUpDown, AlertCircle } from 'lucide-react';
 import { useBusiness } from '../../context/BusinessContext';
 import { Product } from '../../types';
@@ -21,6 +21,17 @@ export const StockAdjustModal: React.FC<StockAdjustModalProps> = ({
   const [quantity, setQuantity] = useState<number | ''>(10);
   const [reason, setReason] = useState('Stock restock from supplier');
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      if (selectedProduct) {
+        setProductId(selectedProduct.id);
+      } else if (products.length > 0 && (!productId || !products.some((p) => p.id === productId))) {
+        setProductId(products[0].id);
+      }
+      setErrorMsg('');
+    }
+  }, [isOpen, selectedProduct, products]);
 
   if (!isOpen) return null;
 
